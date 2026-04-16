@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "CheckIn RFID",
+    "slug": "saas-checkin-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2563eb"
+    },
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.saascheckin.mobile",
+      "buildNumber": "1",
+      "entitlements": {
+        "com.apple.developer.nfc.readersession.formats": ["TAG"]
+      },
+      "infoPlist": {
+        "NFCReaderUsageDescription": "Usado para ler cartões RFID/NFC de clientes.",
+        "NSFaceIDUsageDescription": "Para autenticação segura no app."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2563eb"
+      },
+      "package": "com.saascheckin.mobile"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#2563eb"
+        }
+      ]
+    ],
+    "scheme": "saascheckin"
+  }
+}
