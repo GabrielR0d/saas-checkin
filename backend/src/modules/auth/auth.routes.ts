@@ -10,7 +10,7 @@ const router = Router()
 const resetTokens = new Map<string, { email: string; expiry: number }>()
 
 function signToken(u: { id: string; tenantId: string | null; role: string; name: string; email: string }) {
-  return jwt.sign({ id: u.id, tenantId: u.tenantId, role: u.role, name: u.name, email: u.email }, process.env.JWT_SECRET!, { expiresIn: '1d' })
+  return jwt.sign({ id: u.id, tenantId: u.tenantId, role: u.role, name: u.name, email: u.email }, process.env.JWT_SECRET!, { expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as jwt.SignOptions['expiresIn'] })
 }
 
 router.post('/login', async (req: Request, res: Response) => {

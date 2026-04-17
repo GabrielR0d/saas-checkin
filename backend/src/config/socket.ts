@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken'
 let io: Server
 
 export function initSocket(httpServer: HttpServer): Server {
-  io = new Server(httpServer, { cors: { origin: process.env.FRONTEND_URL || '*', methods: ['GET', 'POST'] } })
+  io = new Server(httpServer, { cors: { origin: process.env.FRONTEND_URL, methods: ['GET', 'POST'] } })
   io.use((socket: Socket, next) => {
     try {
       const token = socket.handshake.auth?.token as string

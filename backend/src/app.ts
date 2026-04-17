@@ -14,7 +14,10 @@ import whatsappRoutes from './modules/whatsapp/whatsapp.routes'
 import billingRoutes from './modules/billing/billing.routes'
 
 const app = express()
-app.use(cors({ origin: process.env.FRONTEND_URL || '*', credentials: true }))
+if (!process.env.FRONTEND_URL) {
+  console.warn('[CORS] WARNING: FRONTEND_URL is not set. Cross-origin requests will be blocked.')
+}
+app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }))
 app.use('/api/v1/billing/webhook', express.raw({ type: 'application/json' }))
 app.use(express.json())
 app.get('/api/v1/health', (_req, res) => res.json({ status: 'ok' }))
