@@ -1,1 +1,143 @@
-datasource db {}
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  OPERATOR
+  VIEWER
+}
+
+enum CardStatus {
+  ACTIVE
+  BLOCKED
+  LOST
+}
+
+enum AccessEventType {
+  ENTRY
+  EXIT
+  UNKNOWN_CARD
+  BLOCKED_CARD
+}
+
+enum AccessDirection {
+  IN
+  OUT
+}
+
+enum WaProvider {
+  EVOLUTION
+  ZAPI
+}
+
+model Tenant {
+  id                   String          @id @default(cuid())
+  slug                 String          @unique
+  name                 String
+  plan                 Plan            @default(FREE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  createdAt            DateTime        @default(now())
+  settings             TenantSettings?
+  users                User[]
+  clients              Client[]
+  cards                Card[]
+  devices              Device[]
+  accessLogs           AccessLog[]
+}
+
+model TenantSettings {
+  id                 String      @id @default(cuid())
+  tenantId           String      @unique
+  tenant             Tenant      @relation(fields: [tenantId], references: [id])
+  notifyOnEntry      Boolean     @default(true)
+  notifyOnExit       Boolean     @default(true)
+  notifyOnUnknown    Boolean     @default(true)
+  whatsappProvider   WaProvider?
+  whatsappInstanceId String?
+  whatsappToken      String?
+  whatsappApiUrl     String?
+  pushToken          String?
+}
+
+model User {
+  id           String    @id @default(cuid())
+  tenantId     String?
+  tenant       Tenant?   @relation(fields: [tenantId], references: [id])
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         UserRole  @default(ADMIN)
+  createdAt    DateTime  @default(now())
+}
+
+model Client {
+  id         String      @id @default(cuid())
+  tenantId   String
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  name       String
+  phone      String
+  email      String?
+  document   String?
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  cards      Card[]
+  accessLogs AccessLog[]
+}
+
+model Card {
+  id         String      @id @default(cuid())
+  tenantId   String
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  uid        String      @unique
+  label      String?
+  status     CardStatus  @default(ACTIVE)
+  clientId   String?
+  client     Client?     @relation(fields: [clientId], references: [id])
+  lastSeenAt DateTime?
+  createdAt  DateTime    @default(now())
+  accessLogs AccessLog[]
+}
+
+model Device {
+  id            String      @id @default(cuid())
+  tenantId      String
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  name          String
+  location      String?
+  apiKey        String      @unique
+  isOnline      Boolean     @default(false)
+  lastHeartbeat DateTime?
+  createdAt     DateTime    @default(now())
+  accessLogs    AccessLog[]
+}
+
+model AccessLog {
+  id           String          @id @default(cuid())
+  tenantId     String
+  tenant       Tenant          @relation(fields: [tenantId], references: [id])
+  cardUid      String
+  eventType    AccessEventType
+  direction    AccessDirection
+  occurredAt   DateTime        @default(now())
+  whatsappSent Boolean         @default(false)
+  clientId     String?
+  client       Client?         @relation(fields: [clientId], references: [id])
+  deviceId     String?
+  device       Device?         @relation(fields: [deviceId], references: [id])
+  rawPayload   String?
+}
