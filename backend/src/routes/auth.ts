@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { z } from 'zod'
 import prisma from '../lib/prisma'
-import { sendEmail } from '../config/email'
+import { sendMail } from '../config/email'
 
 const router = Router()
 
@@ -49,7 +49,7 @@ router.post('/signup', async (req, res) => {
 
     const passwordHash = await bcrypt.hash(data.password, 12)
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       const tenant = await tx.tenant.create({ data: { slug: data.slug, name: data.companyName } })
       await tx.user.create({ data: { tenantId: tenant.id, name: data.name, email: data.email, passwordHash, role: 'ADMIN' } })
       await tx.tenantSettings.create({ data: { tenantId: tenant.id } })
@@ -79,7 +79,7 @@ router.post('/forgot-password', async (req, res) => {
     passwordResetTokens.set(token, { email, expiry: Date.now() + 3600000 })
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
-    await sendEmail(email, 'Reset your password', `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`)
+    await sendMail(email, 'Reset your password', `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`)
 
     return res.json({ success: true })
   } catch {
