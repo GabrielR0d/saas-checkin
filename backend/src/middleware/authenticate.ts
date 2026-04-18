@@ -13,7 +13,7 @@ declare global {
   namespace Express {
     interface Request {
       user: AuthUser
-      device?: { id: string; tenantId: string; name: string; apiKey?: string }
+      device?: { id: string; tenantId: string; name: string; apiKey: string }
       tenantId?: string
     }
   }
