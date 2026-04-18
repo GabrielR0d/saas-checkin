@@ -139,5 +139,7 @@ model AccessLog {
   client       Client?         @relation(fields: [clientId], references: [id])
   deviceId     String?
   device       Device?         @relation(fields: [deviceId], references: [id])
+  cardId       String?
+  card         Card?           @relation(fields: [cardId], references: [id])
   rawPayload   String?
 }
