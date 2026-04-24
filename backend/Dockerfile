@@ -1,12 +1,10 @@
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-COPY backend/package*.json ./backend/
-COPY backend/prisma ./backend/prisma/
-RUN npm install --workspace=backend
-COPY backend/src ./backend/src
-COPY backend/tsconfig.json ./backend/tsconfig.json
-RUN cd backend && npx prisma generate && npm run build
-WORKDIR /app/backend
+COPY prisma ./prisma/
+RUN npm install
+COPY src ./src
+COPY tsconfig.json ./tsconfig.json
+RUN npx prisma generate && npm run build
 EXPOSE 3001
-CMD ["npm", "run", "start"]
+CMD ["sh", "-c", "npx prisma db push && npm run start"]
