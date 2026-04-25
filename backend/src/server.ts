@@ -5,27 +5,26 @@ import prisma from './lib/prisma'
 
 const PORT = parseInt(process.env.PORT || '3001')
 
-async function main() {
-  await prisma.$connect()
-  console.log('[DB] Connected')
+console.log('[Server] Starting on port', PORT)
 
-  const server = http.createServer(app)
-  initSocket(server)
+async function main() {
+    const server = http.createServer(app)
+    initSocket(server)
 
   server.listen(PORT, () => {
-    console.log(`[Server] Listening on http://localhost:${PORT}`)
+        console.log(`[Server] Listening on http://0.0.0.0:${PORT}`)
   })
 
   const shutdown = async () => {
-    console.log('[Server] Shutting down...')
-    await prisma.$disconnect()
-    process.exit(0)
+        console.log('[Server] Shutting down...')
+        await prisma.$disconnect()
+        process.exit(0)
   }
-  process.on('SIGINT', shutdown)
-  process.on('SIGTERM', shutdown)
+    process.on('SIGINT', shutdown)
+    process.on('SIGTERM', shutdown)
 }
 
 main().catch((err) => {
-  console.error('[Server] Fatal:', err)
-  process.exit(1)
+    console.error('[Server] Fatal:', err)
+    process.exit(1)
 })
