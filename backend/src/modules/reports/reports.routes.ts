@@ -69,7 +69,7 @@ router.get('/export/csv', async (req: Request, res: Response) => {
 
     for (const log of logs) {
       stringifier.write({
-        occurredAt: log.occurredAt.toLocaleString('pt-BR'),
+        occurredAt: log.occurredAt.toLocaleString('pt-PT'),
         clientName: log.client?.name ?? '',
         clientPhone: log.client?.phone ?? '',
         cardUid: log.cardUid,
