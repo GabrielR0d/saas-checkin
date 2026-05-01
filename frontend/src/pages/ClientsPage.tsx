@@ -163,7 +163,7 @@ export function ClientsPage() {
                   required
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="(11) 99999-9999"
+                  placeholder="+351 912 345 678"
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
                 />
               </div>
@@ -177,11 +177,11 @@ export function ClientsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Documento</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">NIF</label>
                 <input
                   value={form.document}
                   onChange={(e) => setForm({ ...form, document: e.target.value })}
-                  placeholder="CPF / RG"
+                  placeholder="123 456 789"
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
                 />
               </div>
