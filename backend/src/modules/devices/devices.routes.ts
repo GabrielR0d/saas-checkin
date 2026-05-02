@@ -21,10 +21,21 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.post('/', planLimits('devices'), async (req: Request, res: Response) => {
   try {
-    const { name, location } = req.body
+    const { name, location, latitude, longitude } = req.body
     if (!name) return res.status(400).json({ error: 'name required' })
+
+    const lat = latitude != null ? parseFloat(latitude) : null
+    const lng = longitude != null ? parseFloat(longitude) : null
+
     const device = await prisma.device.create({
-      data: { tenantId: req.user.tenantId, name, location: location || null, apiKey: crypto.randomUUID() },
+      data: {
+        tenantId: req.user.tenantId,
+        name,
+        location: location || null,
+        latitude: lat && !isNaN(lat) ? lat : null,
+        longitude: lng && !isNaN(lng) ? lng : null,
+        apiKey: crypto.randomUUID(),
+      },
     })
     return res.status(201).json(device)
   } catch (err) {
@@ -35,7 +46,9 @@ router.post('/', planLimits('devices'), async (req: Request, res: Response) => {
 
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const device = await prisma.device.findFirst({ where: { id: req.params.id, tenantId: req.user.tenantId } })
+    const device = await prisma.device.findFirst({
+      where: { id: req.params.id, tenantId: req.user.tenantId },
+    })
     if (!device) return res.status(404).json({ error: 'Not found' })
     return res.json(device)
   } catch (err) {
@@ -46,10 +59,19 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { name, location } = req.body
+    const { name, location, latitude, longitude } = req.body
+
+    const lat = latitude != null ? parseFloat(latitude) : undefined
+    const lng = longitude != null ? parseFloat(longitude) : undefined
+
     const updated = await prisma.device.updateMany({
       where: { id: req.params.id, tenantId: req.user.tenantId },
-      data: { name: name ?? undefined, location: location ?? undefined },
+      data: {
+        name: name ?? undefined,
+        location: location ?? undefined,
+        latitude: lat !== undefined ? (isNaN(lat) ? null : lat) : undefined,
+        longitude: lng !== undefined ? (isNaN(lng) ? null : lng) : undefined,
+      },
     })
     if (updated.count === 0) return res.status(404).json({ error: 'Not found' })
     return res.json(await prisma.device.findUnique({ where: { id: req.params.id } }))
