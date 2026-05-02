@@ -27,19 +27,18 @@ export function LogsPage() {
 
   const { data, isLoading } = useQuery<PaginatedResponse<AccessLog>>({
     queryKey: ['access-logs', page, eventType, deviceId, dateFrom, dateTo],
-    queryFn: async () =>
-      (
-        await api.get('/access-logs', {
-          params: {
-            page,
-            limit: 20,
-            eventType: eventType || undefined,
-            deviceId: deviceId || undefined,
-            dateFrom: dateFrom || undefined,
-            dateTo: dateTo || undefined,
-          },
-        })
-      ).data,
+    queryFn: async () => (
+      await api.get('/access-logs', {
+        params: {
+          page,
+          limit: 20,
+          eventType: eventType || undefined,
+          deviceId: deviceId || undefined,
+          dateFrom: dateFrom || undefined,
+          dateTo: dateTo || undefined,
+        },
+      })
+    ).data,
   })
 
   const { data: devices } = useQuery<Device[]>({
@@ -63,18 +62,18 @@ export function LogsPage() {
   }
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 md:p-6 space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Histórico de Acessos</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-100">Histórico de Acessos</h1>
           <p className="text-slate-400 text-sm mt-1">{data?.total ?? 0} registros</p>
         </div>
         <button
           onClick={exportCsv}
-          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-3 py-2 md:px-4 text-sm font-medium transition-colors"
         >
           <Download size={16} />
-          Exportar CSV
+          <span className="hidden sm:inline">Exportar CSV</span>
         </button>
       </div>
 
@@ -91,7 +90,6 @@ export function LogsPage() {
           <option value="UNKNOWN_CARD">Desconhecido</option>
           <option value="BLOCKED_CARD">Bloqueado</option>
         </select>
-
         <select
           value={deviceId}
           onChange={(e) => { setDeviceId(e.target.value); setPage(1) }}
@@ -102,7 +100,6 @@ export function LogsPage() {
             <option key={d.id} value={d.id}>{d.name}</option>
           ))}
         </select>
-
         <input
           type="date"
           value={dateFrom}
@@ -117,7 +114,38 @@ export function LogsPage() {
         />
       </div>
 
-      <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      {/* Mobile: cards */}
+      <div className="md:hidden space-y-3">
+        {isLoading ? (
+          <p className="text-center py-10 text-slate-500">Carregando...</p>
+        ) : data?.data.length === 0 ? (
+          <p className="text-center py-10 text-slate-500">Nenhum registro encontrado</p>
+        ) : (
+          data?.data.map((log) => (
+            <div key={log.id} className="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs text-slate-400">
+                  {new Date(log.createdAt).toLocaleString('pt-PT')}
+                </p>
+                <span className={`shrink-0 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${EVENT_COLORS[log.eventType]}`}>
+                  {EVENT_LABELS[log.eventType]}
+                </span>
+              </div>
+              <p className="font-semibold text-slate-100">
+                {log.client?.name ?? <span className="text-slate-500 font-normal italic">Cartão não registado</span>}
+              </p>
+              <div className="text-sm text-slate-400 space-y-1">
+                <p className="font-mono text-xs">{log.cardUid}</p>
+                {log.device?.name && <p>📡 {log.device.name}</p>}
+                {log.whatsappSent && <p className="text-green-400 text-xs">✓ WhatsApp enviado</p>}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden md:block bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-left">
@@ -138,7 +166,7 @@ export function LogsPage() {
               data?.data.map((log) => (
                 <tr key={log.id} className="border-b border-slate-800 last:border-0 hover:bg-slate-800/50 transition-colors">
                   <td className="px-4 py-3 text-slate-300 whitespace-nowrap">
-                    {new Date(log.createdAt).toLocaleString('pt-BR')}
+                    {new Date(log.createdAt).toLocaleString('pt-PT')}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${EVENT_COLORS[log.eventType]}`}>
@@ -146,8 +174,8 @@ export function LogsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 font-mono text-slate-300">{log.cardUid}</td>
-                  <td className="px-4 py-3 text-slate-300">{log.client?.name || '—'}</td>
-                  <td className="px-4 py-3 text-slate-300">{log.device?.name || '—'}</td>
+                  <td className="px-4 py-3 text-slate-300">{log.client?.name ?? '—'}</td>
+                  <td className="px-4 py-3 text-slate-300">{log.device?.name ?? '—'}</td>
                   <td className="px-4 py-3 text-center">
                     {log.whatsappSent
                       ? <span className="text-green-400">✓</span>
@@ -159,21 +187,30 @@ export function LogsPage() {
             )}
           </tbody>
         </table>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800">
-            <span className="text-sm text-slate-400">Página {page} de {totalPages}</span>
-            <div className="flex gap-2">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30">
-                <ChevronLeft size={18} />
-              </button>
-              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30">
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-1">
+          <span className="text-sm text-slate-400">Página {page} de {totalPages}</span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
