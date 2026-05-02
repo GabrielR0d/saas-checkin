@@ -13,7 +13,7 @@ declare global {
   namespace Express {
     interface Request {
       user: JwtUser
-      device?: { id: string; tenantId: string; name: string; apiKey: string }
+      device?: { id: string; tenantId: string; name: string; apiKey: string; latitude: number | null; longitude: number | null }
       tenantId?: string
     }
   }
