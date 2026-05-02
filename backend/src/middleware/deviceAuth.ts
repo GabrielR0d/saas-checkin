@@ -11,7 +11,14 @@ export async function deviceAuth(req: Request, res: Response, next: NextFunction
     if (!device) {
       return res.status(401).json({ error: 'Invalid device API key' })
     }
-    req.device = { id: device.id, tenantId: device.tenantId, name: device.name, apiKey: device.apiKey }
+    req.device = {
+      id: device.id,
+      tenantId: device.tenantId,
+      name: device.name,
+      apiKey: device.apiKey,
+      latitude: device.latitude ?? null,
+      longitude: device.longitude ?? null,
+    }
     req.tenantId = device.tenantId
     next()
   } catch (err) {
