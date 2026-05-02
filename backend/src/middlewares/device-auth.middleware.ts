@@ -11,19 +11,24 @@ export async function deviceAuth(
     res.status(401).json({ error: 'Missing X-Device-Key header' })
     return
   }
+
   try {
     const device = await prisma.device.findUnique({
       where: { apiKey },
     })
+
     if (!device) {
       res.status(401).json({ error: 'Invalid device key' })
       return
     }
+
     req.device = {
       id: device.id,
       tenantId: device.tenantId,
       name: device.name,
       apiKey: device.apiKey,
+      latitude: device.latitude ?? null,
+      longitude: device.longitude ?? null,
     }
     req.tenantId = device.tenantId
     next()
