@@ -7,7 +7,9 @@ router.use(authenticate)
 
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const settings = await prisma.tenantSettings.findUnique({ where: { tenantId: req.user.tenantId } })
+    const settings = await prisma.tenantSettings.findUnique({
+      where: { tenantId: req.user.tenantId },
+    })
     return res.json(settings)
   } catch (err) {
     console.error(err)
@@ -17,11 +19,42 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.patch('/', async (req: Request, res: Response) => {
   try {
-    const { notifyOnEntry, notifyOnExit, notifyOnUnknown, whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl } = req.body
+    const {
+      notifyOnEntry,
+      notifyOnExit,
+      notifyOnUnknown,
+      whatsappProvider,
+      whatsappInstanceId,
+      whatsappToken,
+      whatsappApiUrl,
+      locationCheckEnabled,
+      checkInLat,
+      checkInLng,
+      checkInRadius,
+    } = req.body
+
+    const lat = checkInLat != null ? parseFloat(checkInLat) : undefined
+    const lng = checkInLng != null ? parseFloat(checkInLng) : undefined
+    const radius = checkInRadius != null ? parseInt(checkInRadius, 10) : undefined
+
+    const data = {
+      notifyOnEntry,
+      notifyOnExit,
+      notifyOnUnknown,
+      whatsappProvider,
+      whatsappInstanceId,
+      whatsappToken,
+      whatsappApiUrl,
+      locationCheckEnabled,
+      checkInLat: lat !== undefined ? (isNaN(lat) ? null : lat) : undefined,
+      checkInLng: lng !== undefined ? (isNaN(lng) ? null : lng) : undefined,
+      checkInRadius: radius !== undefined ? (isNaN(radius) ? 50 : radius) : undefined,
+    }
+
     const settings = await prisma.tenantSettings.upsert({
       where: { tenantId: req.user.tenantId },
-      update: { notifyOnEntry, notifyOnExit, notifyOnUnknown, whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl },
-      create: { tenantId: req.user.tenantId, notifyOnEntry, notifyOnExit, notifyOnUnknown, whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl },
+      update: data,
+      create: { tenantId: req.user.tenantId, ...data },
     })
     return res.json(settings)
   } catch (err) {
