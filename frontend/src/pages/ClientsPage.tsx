@@ -25,8 +25,7 @@ export function ClientsPage() {
 
   const { data, isLoading } = useQuery<PaginatedResponse<Client>>({
     queryKey: ['clients', page, search],
-    queryFn: async () =>
-      (await api.get('/clients', { params: { page, limit: 20, search: search || undefined } })).data,
+    queryFn: async () => (await api.get('/clients', { params: { page, limit: 20, search: search || undefined } })).data,
   })
 
   const create = useMutation({
@@ -43,18 +42,20 @@ export function ClientsPage() {
   const totalPages = data ? Math.ceil(data.total / 20) : 1
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Participantes</h1>
-          <p className="text-slate-400 text-sm mt-1">{data?.total ?? 0} participantes cadastrados</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-100">Participantes</h1>
+          <p className="text-slate-400 text-sm mt-0.5">{data?.total ?? 0} participantes</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-3 py-2 md:px-4 text-sm font-medium transition-colors"
         >
           <Plus size={16} />
-          Novo Participante
+          <span className="hidden sm:inline">Novo Participante</span>
+          <span className="sm:hidden">Novo</span>
         </button>
       </div>
 
@@ -70,15 +71,47 @@ export function ClientsPage() {
         />
       </div>
 
-      {/* Table */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      {/* Mobile: cards */}
+      <div className="md:hidden space-y-3">
+        {isLoading ? (
+          <p className="text-center py-10 text-slate-500">Carregando...</p>
+        ) : data?.data.length === 0 ? (
+          <p className="text-center py-10 text-slate-500">Nenhum participante encontrado</p>
+        ) : (
+          data?.data.map((client) => (
+            <div
+              key={client.id}
+              onClick={() => navigate(`/clients/${client.id}`)}
+              className="bg-slate-900 rounded-xl border border-slate-800 p-4 cursor-pointer active:bg-slate-800 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold text-slate-100">{client.name}</p>
+                <span className={`shrink-0 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                  client.isActive ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                }`}>
+                  {client.isActive ? 'Ativo' : 'Inativo'}
+                </span>
+              </div>
+              <div className="mt-2 space-y-1 text-sm text-slate-400">
+                <p>{client.phone}</p>
+                {client.email && <p className="truncate">{client.email}</p>}
+                {client.document && <p>NIF: {client.document}</p>}
+                <p className="text-xs text-slate-500">{client._count?.cards ?? 0} cartão(ões)</p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden md:block bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-left">
               <th className="px-4 py-3 text-slate-400 font-medium">Nome</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Telefone</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Email</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Documento</th>
+              <th className="px-4 py-3 text-slate-400 font-medium">NIF</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Status</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Cartões</th>
             </tr>
@@ -101,9 +134,7 @@ export function ClientsPage() {
                   <td className="px-4 py-3 text-slate-300">{client.document || '—'}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                      client.isActive
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-slate-700 text-slate-400'
+                      client.isActive ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
                     }`}>
                       {client.isActive ? 'Ativo' : 'Inativo'}
                     </span>
@@ -114,93 +145,53 @@ export function ClientsPage() {
             )}
           </tbody>
         </table>
-
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800">
             <span className="text-sm text-slate-400">Página {page} de {totalPages}</span>
             <div className="flex gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronRight size={18} />
-              </button>
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft size={18} /></button>
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight size={18} /></button>
             </div>
           </div>
         )}
       </div>
 
+      {/* Pagination mobile */}
+      {totalPages > 1 && (
+        <div className="md:hidden flex items-center justify-between py-2">
+          <span className="text-sm text-slate-400">Página {page} de {totalPages}</span>
+          <div className="flex gap-2">
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30"><ChevronLeft size={18} /></button>
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30"><ChevronRight size={18} /></button>
+          </div>
+        </div>
+      )}
+
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4">
           <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 w-full max-w-md">
             <h2 className="text-lg font-semibold text-slate-100 mb-4">Novo Participante</h2>
-            <form
-              onSubmit={(e) => { e.preventDefault(); create.mutate(form) }}
-              className="space-y-4"
-            >
+            <form onSubmit={(e) => { e.preventDefault(); create.mutate(form) }} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Nome *</label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Telefone *</label>
-                <input
-                  required
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="+351 912 345 678"
-                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
-                />
+                <input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+351 912 345 678" className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">NIF</label>
-                <input
-                  value={form.document}
-                  onChange={(e) => setForm({ ...form, document: e.target.value })}
-                  placeholder="123 456 789"
-                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
-                />
+                <input value={form.document} onChange={(e) => setForm({ ...form, document: e.target.value })} placeholder="123 456 789" className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500" />
               </div>
-
               <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setShowModal(false); setForm(EMPTY) }}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={create.isPending}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                >
-                  {create.isPending ? 'Salvando...' : 'Salvar'}
-                </button>
+                <button type="button" onClick={() => { setShowModal(false); setForm(EMPTY) }} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors">Cancelar</button>
+                <button type="submit" disabled={create.isPending} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">{create.isPending ? 'Salvando...' : 'Salvar'}</button>
               </div>
             </form>
           </div>
