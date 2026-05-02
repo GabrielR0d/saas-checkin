@@ -8,4 +8,4 @@ COPY src ./src
 COPY tsconfig.json ./tsconfig.json
 RUN npx prisma generate && npm run build
 EXPOSE 3001
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/server.js"]
