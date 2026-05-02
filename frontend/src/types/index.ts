@@ -31,6 +31,8 @@ export interface Device {
   id: string
   name: string
   location?: string
+  latitude?: number | null
+  longitude?: number | null
   isOnline: boolean
   lastHeartbeat?: string
   apiKey: string
@@ -45,6 +47,8 @@ export interface AccessLog {
   deviceId: string
   whatsappSent: boolean
   createdAt: string
+  latitude?: number | null
+  longitude?: number | null
   client?: Pick<Client, 'id' | 'name'>
   device?: Pick<Device, 'id' | 'name'>
   card?: Pick<Card, 'id' | 'uid' | 'label'>
@@ -67,6 +71,10 @@ export interface Settings {
   whatsappInstanceId?: string
   whatsappToken?: string
   whatsappApiUrl?: string
+  locationCheckEnabled?: boolean
+  checkInLat?: number | null
+  checkInLng?: number | null
+  checkInRadius?: number
 }
 
 export interface PaginatedResponse<T> {
