@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Eye, EyeOff, Copy, RefreshCw } from 'lucide-react'
+import { Plus, Eye, EyeOff, Copy, RefreshCw, MapPin } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
 import type { Device } from '../types'
@@ -8,9 +8,11 @@ import type { Device } from '../types'
 interface NewDeviceForm {
   name: string
   location: string
+  latitude: string
+  longitude: string
 }
 
-const EMPTY: NewDeviceForm = { name: '', location: '' }
+const EMPTY: NewDeviceForm = { name: '', location: '', latitude: '', longitude: '' }
 
 function timeAgo(dateStr?: string) {
   if (!dateStr) return 'nunca'
@@ -39,7 +41,13 @@ export function DevicesPage() {
   })
 
   const create = useMutation({
-    mutationFn: (body: NewDeviceForm) => api.post('/devices', { ...body, location: body.location || undefined }),
+    mutationFn: (body: NewDeviceForm) =>
+      api.post('/devices', {
+        name: body.name,
+        location: body.location || undefined,
+        latitude: body.latitude !== '' ? parseFloat(body.latitude) : undefined,
+        longitude: body.longitude !== '' ? parseFloat(body.longitude) : undefined,
+      }),
     onSuccess: () => {
       toast.success('Dispositivo criado!')
       qc.invalidateQueries({ queryKey: ['devices'] })
@@ -70,6 +78,24 @@ export function DevicesPage() {
   function copyKey(key: string) {
     navigator.clipboard.writeText(key)
     toast.success('Chave copiada!')
+  }
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      toast.error('Geolocalização não suportada neste browser')
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({
+          ...f,
+          latitude: pos.coords.latitude.toFixed(7),
+          longitude: pos.coords.longitude.toFixed(7),
+        }))
+        toast.success('Localização obtida!')
+      },
+      () => toast.error('Não foi possível obter a localização'),
+    )
   }
 
   return (
@@ -117,6 +143,15 @@ export function DevicesPage() {
                   Último heartbeat: {timeAgo(device.lastHeartbeat)}
                 </p>
 
+                {(device.latitude != null || device.longitude != null) && (
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <MapPin size={12} className="shrink-0 text-indigo-400" />
+                    <span className="font-mono">
+                      {device.latitude?.toFixed(5)}, {device.longitude?.toFixed(5)}
+                    </span>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-slate-400">API Key</label>
                   <div className="flex items-center gap-2">
@@ -162,7 +197,10 @@ export function DevicesPage() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 w-full max-w-md">
             <h2 className="text-lg font-semibold text-slate-100 mb-4">Novo Dispositivo</h2>
-            <form onSubmit={(e) => { e.preventDefault(); create.mutate(form) }} className="space-y-4">
+            <form
+              onSubmit={(e) => { e.preventDefault(); create.mutate(form) }}
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Nome *</label>
                 <input
@@ -173,8 +211,9 @@ export function DevicesPage() {
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Localização</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Localização</label>
                 <input
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
@@ -182,11 +221,55 @@ export function DevicesPage() {
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
                 />
               </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-sm font-medium text-slate-300">Coordenadas GPS</label>
+                  <button
+                    type="button"
+                    onClick={useCurrentLocation}
+                    className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    <MapPin size={12} />
+                    Usar localização atual
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    step="any"
+                    value={form.latitude}
+                    onChange={(e) => setForm({ ...form, latitude: e.target.value })}
+                    placeholder="Latitude"
+                    className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    value={form.longitude}
+                    onChange={(e) => setForm({ ...form, longitude: e.target.value })}
+                    placeholder="Longitude"
+                    className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Usado como fallback na validação de localização do check-in
+                </p>
+              </div>
+
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => { setShowModal(false); setForm(EMPTY) }} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                <button
+                  type="button"
+                  onClick={() => { setShowModal(false); setForm(EMPTY) }}
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                >
                   Cancelar
                 </button>
-                <button type="submit" disabled={create.isPending} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                <button
+                  type="submit"
+                  disabled={create.isPending}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                >
                   {create.isPending ? 'Criando...' : 'Criar'}
                 </button>
               </div>
