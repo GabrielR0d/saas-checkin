@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "SaaS Check-in",
+    "slug": "saas-checkin",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gabrielrod.saascheckin",
+      "buildNumber": "1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      },
+      "package": "com.gabrielrod.saascheckin"
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "scheme": "saascheckin",
+    "extra": {
+      "eas": {
+        "projectId": "saas-checkin"
+      }
+    }
+  }
+}
