@@ -1,0 +1,180 @@
+# SaaS Check-in
+
+A multi-tenant SaaS platform for managing access control and check-ins via RFID cards, with WhatsApp notifications, Stripe billing, and real-time dashboards.
+
+## Live URLs
+
+| Service  | URL |
+|----------|-----|
+| Backend (Railway) | https://saas-checkin-production-aeba.up.railway.app |
+| Frontend (Vercel) | https://frontend-gabrielr0ds-projects.vercel.app |
+
+## Test Credentials
+
+### Business Owner (ADMIN)
+
+| Field    | Value |
+|----------|-------|
+| Email    | `teste.dono@saascheckin.com` |
+| Password | `Teste123!` |
+| Role     | `ADMIN` |
+| Tenant   | `empresa-teste` |
+
+### Employee / Operator
+
+| Field    | Value |
+|----------|-------|
+| Email    | `teste.utilizador@saascheckin.com` |
+| Password | `Teste123!` |
+| Role     | `ADMIN` (second tenant — no invite flow yet) |
+| Tenant   | `utilizador-teste` |
+
+> **Note:** The API currently has no endpoint to add users to an existing tenant (no invite flow). Both test accounts own separate tenants. An `OPERATOR`/`VIEWER` role can only be set directly in the database.
+
+### Create accounts via curl
+
+```bash
+# Account 1 — Business Owner
+curl -s -X POST https://saas-checkin-production-aeba.up.railway.app/api/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Dono Teste",
+    "email": "teste.dono@saascheckin.com",
+    "password": "Teste123!",
+    "companyName": "Empresa Teste",
+    "slug": "empresa-teste"
+  }'
+
+# Account 2 — Employee (separate tenant, ADMIN role)
+curl -s -X POST https://saas-checkin-production-aeba.up.railway.app/api/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Utilizador Teste",
+    "email": "teste.utilizador@saascheckin.com",
+    "password": "Teste123!",
+    "companyName": "Utilizador Empresa",
+    "slug": "utilizador-teste"
+  }'
+
+# Login
+curl -s -X POST https://saas-checkin-production-aeba.up.railway.app/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "teste.dono@saascheckin.com", "password": "Teste123!"}'
+```
+
+## Stack
+
+- **Backend**: Node.js + Express + TypeScript + Prisma (PostgreSQL)
+- **Frontend**: React + Vite + TailwindCSS
+- **Mobile**: Expo (React Native)
+- **Payments**: Stripe
+- **Notifications**: WhatsApp via Evolution API
+- **Realtime**: Socket.io
+
+## User Roles
+
+| Role         | Description |
+|--------------|-------------|
+| `SUPER_ADMIN` | Platform-level admin |
+| `ADMIN`       | Tenant owner / business admin |
+| `OPERATOR`    | Day-to-day operations (set directly in DB) |
+| `VIEWER`      | Read-only access (set directly in DB) |
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20+
+- Docker & Docker Compose
+- PostgreSQL (or use the Docker Compose setup)
+
+### Setup
+
+1. **Clone the repo**
+   ```bash
+   git clone https://github.com/GabrielR0d/saas-checkin.git
+   cd saas-checkin
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env
+   # Edit both files with your values
+   ```
+
+4. **Start local services (Postgres, Redis, Evolution API)**
+   ```bash
+   docker compose up -d
+   ```
+
+5. **Run database migrations**
+   ```bash
+   cd backend && npx prisma db push
+   ```
+
+6. **Start dev servers**
+   ```bash
+   npm run dev:backend   # http://localhost:3001
+   npm run dev:frontend  # http://localhost:5173
+   ```
+
+## Deploying to Railway
+
+### Backend Service
+
+1. Create a new Railway project and add a **PostgreSQL** database plugin.
+2. Create a new service pointing to this repo.
+3. Set the **Root Directory** to `/` (Railway will use `railway.toml`).
+4. Add all environment variables from `backend/.env.example` (Railway auto-injects `DATABASE_URL`).
+
+### Frontend Service (Vercel)
+
+The frontend is deployed on Vercel. It reads `VITE_API_URL` at build time to point at the backend.
+
+### Required Environment Variables (Backend)
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string (auto-provided by Railway) |
+| `JWT_SECRET` | Secret key for JWT tokens (min 32 chars) |
+| `STRIPE_SECRET_KEY` | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `STRIPE_BASIC_PRICE_ID` | Stripe Price ID for the Basic plan |
+| `STRIPE_PRO_PRICE_ID` | Stripe Price ID for the Pro plan |
+| `FRONTEND_URL` | Your deployed frontend URL (for CORS) |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | Email credentials |
+| `EVOLUTION_API_URL` / `EVOLUTION_API_KEY` | WhatsApp API (optional) |
+
+## Health Check
+
+```
+GET /api/v1/health
+→ { "status": "ok", "ts": "..." }
+```
+
+## Project Structure
+
+```
+saas-checkin/
+├── backend/          # Express API
+│   ├── src/
+│   │   ├── modules/  # Feature modules (auth, billing, clients, ...)
+│   │   ├── middlewares/
+│   │   ├── config/
+│   │   ├── app.ts
+│   │   └── server.ts
+│   ├── prisma/       # Prisma schema & migrations
+│   ├── Dockerfile
+│   └── railway.toml
+├── frontend/         # React + Vite app
+│   └── src/
+├── mobile/           # Expo (React Native) app
+├── docker-compose.yml
+└── package.json      # Workspace root
+```

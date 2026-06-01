@@ -1,5 +1,6 @@
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
+import { router } from 'expo-router'
 
 export const API_URL = 'https://saas-checkin-production-aeba.up.railway.app/api/v1'
 
@@ -10,3 +11,15 @@ api.interceptors.request.use(async (config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      await SecureStore.deleteItemAsync('accessToken')
+      await SecureStore.deleteItemAsync('user')
+      router.replace('/(auth)/login')
+    }
+    return Promise.reject(error)
+  }
+)

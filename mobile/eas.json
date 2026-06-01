@@ -17,8 +17,8 @@
     "production": {
       "ios": {
         "appleId": "gabriel.00rod@gmail.com",
-        "ascAppId": "PLACEHOLDER_APP_STORE_CONNECT_ID",
-        "appleTeamId": "PLACEHOLDER_TEAM_ID"
+        "ascAppId": "TODO_APP_STORE_CONNECT_APP_ID",
+        "appleTeamId": "TODO_APPLE_TEAM_ID"
       }
     }
   }
