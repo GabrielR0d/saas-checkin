@@ -3,7 +3,7 @@ import app from './app'
 import { initSocket } from './config/socket'
 import prisma from './lib/prisma'
 
-const PORT = parseInt(process.env.PORT || '3001')
+const PORT = parseInt(process.env.PORT || '3000')
 
 async function main() {
   await prisma.$connect()

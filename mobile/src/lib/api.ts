@@ -2,7 +2,7 @@ import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
 import { router } from 'expo-router'
 
-export const API_URL = 'https://saas-checkin-production-aeba.up.railway.app/api/v1'
+export const API_URL = 'https://saas-checkin-backend.onrender.com/api/v1'
 
 export const api = axios.create({ baseURL: API_URL })
 

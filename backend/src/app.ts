@@ -16,7 +16,23 @@ import billingRoutes from './modules/billing/billing.routes'
 
 const app = express()
 
-app.use(cors({ origin: process.env.FRONTEND_URL || '*', credentials: true }))
+const ALLOWED_ORIGINS = [
+  'https://saas-checkin-backend.onrender.com',
+  'https://frontend-gabrielr0ds-projects.vercel.app',
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+]
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true)
+    const allowed =
+      ALLOWED_ORIGINS.includes(origin) ||
+      /^https:\/\/[^.]+\.vercel\.app$/.test(origin) ||
+      /^http:\/\/localhost(:\d+)?$/.test(origin)
+    callback(allowed ? null : new Error('CORS not allowed'), allowed)
+  },
+  credentials: true,
+}))
 
 // Raw body for Stripe webhook
 app.use('/api/v1/billing/webhook', express.raw({ type: 'application/json' }))
