@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Plan {
+enum Plan 
   FREE
   BASIC
   PRO
@@ -96,7 +96,6 @@ model Client {
   isActive   Boolean     @default(true)
   createdAt  DateTime    @default(now())
   cards      Card[]
-  accessLogs AccessLog[]
 }
 
 model Card {
@@ -110,7 +109,6 @@ model Card {
   client     Client?     @relation(fields: [clientId], references: [id])
   lastSeenAt DateTime?
   createdAt  DateTime    @default(now())
-  accessLogs AccessLog[]
 }
 
 model Device {
