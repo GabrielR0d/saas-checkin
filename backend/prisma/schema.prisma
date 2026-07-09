@@ -109,6 +109,7 @@ model Card {
   client     Client?     @relation(fields: [clientId], references: [id])
   lastSeenAt DateTime?
   createdAt  DateTime    @default(now())
+  accessLogs AccessLog[]
 }
 
 model Device {
@@ -137,4 +138,6 @@ model AccessLog {
   deviceId     String?
   device       Device?         @relation(fields: [deviceId], references: [id])
   rawPayload   String?
+  cardId       String?
+  card         Card?           @relation(fields: [cardId], references: [id])
 }
