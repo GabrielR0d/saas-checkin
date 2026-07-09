@@ -3,7 +3,7 @@ services:
     name: saas-checkin-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install --ignore-scripts && npx prisma generate --schema=./prisma/schema.prisma && npm run build
+    buildCommand: rm -rf node_modules/.prisma ../node_modules/.prisma && npm install && npx prisma generate && npm run build
     startCommand: npx prisma db push && node dist/server.js
     plan: free
     envVars:
