@@ -3,7 +3,7 @@ services:
     name: saas-checkin-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install && echo "--- BUILD DEBUG ---" && echo "PWD=$(pwd)" && ls prisma/ && head -n 20 prisma/schema.prisma && echo "--- END DEBUG ---" && npx prisma generate --schema=./prisma/schema.prisma && npm run build
+    buildCommand: npm install --ignore-scripts && npx prisma generate --schema=./prisma/schema.prisma && npm run build
     startCommand: npx prisma db push && node dist/server.js
     plan: free
     envVars:
