@@ -96,6 +96,7 @@ model Client {
   isActive   Boolean     @default(true)
   createdAt  DateTime    @default(now())
   cards      Card[]
+  accessLogs AccessLog[]
 }
 
 model Card {
@@ -135,6 +136,7 @@ model AccessLog {
   occurredAt   DateTime        @default(now())
   whatsappSent Boolean         @default(false)
   clientId     String?
+  client       Client?         @relation(fields: [clientId], references: [id])
   deviceId     String?
   device       Device?         @relation(fields: [deviceId], references: [id])
   rawPayload   String?
