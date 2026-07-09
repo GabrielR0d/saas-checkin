@@ -17,8 +17,7 @@ import billingRoutes from './modules/billing/billing.routes'
 const app = express()
 
 const ALLOWED_ORIGINS = [
-  'https://saas-checkin-backend.onrender.com',
-  'https://frontend-gabrielr0ds-projects.vercel.app',
+  'https://saas-checkin.vercel.app',
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
 ]
 
