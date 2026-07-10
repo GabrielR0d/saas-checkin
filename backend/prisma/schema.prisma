@@ -143,3 +143,11 @@ model AccessLog {
   cardId       String?
   card         Card?           @relation(fields: [cardId], references: [id])
 }
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
