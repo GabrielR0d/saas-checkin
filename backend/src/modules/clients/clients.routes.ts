@@ -44,13 +44,14 @@ router.get('/', async (req: Request, res: Response) => {
 // POST /clients
 router.post('/', planLimits('clients'), async (req: Request, res: Response) => {
   try {
-    const { name, phone, email, document } = req.body
+    const { name, phone, phoneNumber, email, document } = req.body
     if (!name || !phone) return res.status(400).json({ error: 'name and phone required' })
     const client = await prisma.client.create({
-      data: { tenantId: req.user.tenantId, name, phone, email: email || null, document: document || null },
+      data: { tenantId: req.user.tenantId, name, phone, phoneNumber: phoneNumber || null, email: email || null, document: document || null },
     })
     return res.status(201).json(client)
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.code === 'P2002') return res.status(409).json({ error: 'Phone number already in use' })
     console.error(err)
     return res.status(500).json({ error: 'Internal server error' })
   }
@@ -74,15 +75,23 @@ router.get('/:id', async (req: Request, res: Response) => {
 // PUT /clients/:id
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { name, phone, email, document, isActive } = req.body
+    const { name, phone, phoneNumber, email, document, isActive } = req.body
     const updated = await prisma.client.updateMany({
       where: { id: req.params.id, tenantId: req.user.tenantId },
-      data: { name, phone, email: email ?? undefined, document: document ?? undefined, isActive: isActive ?? undefined },
+      data: {
+        name,
+        phone,
+        phoneNumber: phoneNumber ?? undefined,
+        email: email ?? undefined,
+        document: document ?? undefined,
+        isActive: isActive ?? undefined,
+      },
     })
     if (updated.count === 0) return res.status(404).json({ error: 'Not found' })
     const client = await prisma.client.findUnique({ where: { id: req.params.id } })
     return res.json(client)
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.code === 'P2002') return res.status(409).json({ error: 'Phone number already in use' })
     console.error(err)
     return res.status(500).json({ error: 'Internal server error' })
   }

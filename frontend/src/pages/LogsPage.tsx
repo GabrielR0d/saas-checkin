@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { api } from '../lib/api'
+import { CheckinSourceBadge } from '../components/CheckinSourceBadge'
 import type { AccessLog, Device, PaginatedResponse } from '../types'
 
 const EVENT_COLORS = {
@@ -126,14 +127,15 @@ export function LogsPage() {
               <th className="px-4 py-3 text-slate-400 font-medium">UID Cartão</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Participante</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Dispositivo</th>
+              <th className="px-4 py-3 text-slate-400 font-medium">Origem</th>
               <th className="px-4 py-3 text-slate-400 font-medium text-center">WhatsApp</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6} className="text-center py-10 text-slate-500">Carregando...</td></tr>
+              <tr><td colSpan={7} className="text-center py-10 text-slate-500">Carregando...</td></tr>
             ) : data?.data.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-10 text-slate-500">Nenhum registro encontrado</td></tr>
+              <tr><td colSpan={7} className="text-center py-10 text-slate-500">Nenhum registro encontrado</td></tr>
             ) : (
               data?.data.map((log) => (
                 <tr key={log.id} className="border-b border-slate-800 last:border-0 hover:bg-slate-800/50 transition-colors">
@@ -148,6 +150,7 @@ export function LogsPage() {
                   <td className="px-4 py-3 font-mono text-slate-300">{log.cardUid}</td>
                   <td className="px-4 py-3 text-slate-300">{log.client?.name || '—'}</td>
                   <td className="px-4 py-3 text-slate-300">{log.device?.name || '—'}</td>
+                  <td className="px-4 py-3"><CheckinSourceBadge source={log.checkinSource} /></td>
                   <td className="px-4 py-3 text-center">
                     {log.whatsappSent
                       ? <span className="text-green-400">✓</span>

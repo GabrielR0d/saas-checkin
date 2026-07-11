@@ -9,11 +9,12 @@ import type { Client, PaginatedResponse } from '../types'
 interface NewClientForm {
   name: string
   phone: string
+  phoneNumber: string
   email: string
   document: string
 }
 
-const EMPTY: NewClientForm = { name: '', phone: '', email: '', document: '' }
+const EMPTY: NewClientForm = { name: '', phone: '', phoneNumber: '', email: '', document: '' }
 
 export function ClientsPage() {
   const [search, setSearch] = useState('')
@@ -164,6 +165,16 @@ export function ClientsPage() {
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="(11) 99999-9999"
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Telefone (WhatsApp)</label>
+                <input
+                  type="tel"
+                  value={form.phoneNumber}
+                  onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+                  placeholder="5511999999999"
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
                 />
               </div>

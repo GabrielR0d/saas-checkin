@@ -17,11 +17,20 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.patch('/', async (req: Request, res: Response) => {
   try {
-    const { notifyOnEntry, notifyOnExit, notifyOnUnknown, whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl } = req.body
+    const {
+      notifyOnEntry, notifyOnExit, notifyOnUnknown,
+      whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl,
+      whatsappEnabled, locationLat, locationLng, locationRadius,
+    } = req.body
+    const data = {
+      notifyOnEntry, notifyOnExit, notifyOnUnknown,
+      whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl,
+      whatsappEnabled, locationLat, locationLng, locationRadius,
+    }
     const settings = await prisma.tenantSettings.upsert({
       where: { tenantId: req.user.tenantId },
-      update: { notifyOnEntry, notifyOnExit, notifyOnUnknown, whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl },
-      create: { tenantId: req.user.tenantId, notifyOnEntry, notifyOnExit, notifyOnUnknown, whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl },
+      update: data,
+      create: { tenantId: req.user.tenantId, ...data },
     })
     return res.json(settings)
   } catch (err) {

@@ -15,6 +15,10 @@ export function SettingsPage() {
     whatsappInstanceId: '',
     whatsappToken: '',
     whatsappApiUrl: '',
+    whatsappEnabled: false,
+    locationLat: null,
+    locationLng: null,
+    locationRadius: 100,
   })
 
   const { data: settings, isLoading } = useQuery<Settings>({
@@ -32,6 +36,10 @@ export function SettingsPage() {
         whatsappInstanceId: settings.whatsappInstanceId ?? '',
         whatsappToken: settings.whatsappToken ?? '',
         whatsappApiUrl: settings.whatsappApiUrl ?? '',
+        whatsappEnabled: settings.whatsappEnabled ?? false,
+        locationLat: settings.locationLat ?? null,
+        locationLng: settings.locationLng ?? null,
+        locationRadius: settings.locationRadius ?? 100,
       })
     }
   }, [settings])
@@ -131,6 +139,67 @@ export function SettingsPage() {
             placeholder="https://api.seudominio.com"
             className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
           />
+        </div>
+      </div>
+
+      {/* WhatsApp Check-in / Geofencing */}
+      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 space-y-4">
+        <h2 className="text-base font-semibold text-slate-100">Check-in WhatsApp</h2>
+
+        <label className="flex items-center justify-between cursor-pointer">
+          <span className="text-sm text-slate-300">Habilitar check-in por WhatsApp</span>
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, whatsappEnabled: !form.whatsappEnabled })}
+            className={`relative w-11 h-6 rounded-full transition-colors ${
+              form.whatsappEnabled ? 'bg-indigo-600' : 'bg-slate-700'
+            }`}
+          >
+            <span
+              className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                form.whatsappEnabled ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </label>
+
+        <div>
+          <p className="text-sm font-medium text-slate-300 mb-3">Localização do estabelecimento</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Latitude</label>
+              <input
+                type="number"
+                step="any"
+                value={form.locationLat ?? ''}
+                onChange={(e) => setForm({ ...form, locationLat: e.target.value === '' ? null : parseFloat(e.target.value) })}
+                placeholder="-23.5505"
+                className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Longitude</label>
+              <input
+                type="number"
+                step="any"
+                value={form.locationLng ?? ''}
+                onChange={(e) => setForm({ ...form, locationLng: e.target.value === '' ? null : parseFloat(e.target.value) })}
+                placeholder="-46.6333"
+                className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Raio (metros)</label>
+              <input
+                type="number"
+                min={1}
+                value={form.locationRadius}
+                onChange={(e) => setForm({ ...form, locationRadius: parseFloat(e.target.value) || 0 })}
+                placeholder="100"
+                className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+              />
+            </div>
+          </div>
         </div>
       </div>
 

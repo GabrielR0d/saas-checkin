@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../../lib/api'
+import { CheckinSourceBadge } from '../../components/CheckinSourceBadge'
 import type { Client, Card, AccessLog } from '../../types'
 
 const EVENT_COLORS = {
@@ -149,6 +150,7 @@ export function ClientDetailPage() {
                   <th className="px-4 py-3 text-slate-400 font-medium">Evento</th>
                   <th className="px-4 py-3 text-slate-400 font-medium">Cartão</th>
                   <th className="px-4 py-3 text-slate-400 font-medium">Dispositivo</th>
+                  <th className="px-4 py-3 text-slate-400 font-medium">Origem</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,6 +166,7 @@ export function ClientDetailPage() {
                     </td>
                     <td className="px-4 py-3 font-mono text-slate-300">{log.cardUid}</td>
                     <td className="px-4 py-3 text-slate-300">{log.device?.name || '—'}</td>
+                    <td className="px-4 py-3"><CheckinSourceBadge source={log.checkinSource} /></td>
                   </tr>
                 ))}
               </tbody>

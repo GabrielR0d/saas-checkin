@@ -10,6 +10,7 @@ export interface Client {
   id: string
   name: string
   phone: string
+  phoneNumber?: string
   email?: string
   document?: string
   isActive: boolean
@@ -44,6 +45,7 @@ export interface AccessLog {
   clientId?: string
   deviceId: string
   whatsappSent: boolean
+  checkinSource?: 'whatsapp' | 'rfid' | null
   createdAt: string
   client?: Pick<Client, 'id' | 'name'>
   device?: Pick<Device, 'id' | 'name'>
@@ -67,6 +69,10 @@ export interface Settings {
   whatsappInstanceId?: string
   whatsappToken?: string
   whatsappApiUrl?: string
+  whatsappEnabled: boolean
+  locationLat?: number | null
+  locationLng?: number | null
+  locationRadius: number
 }
 
 export interface PaginatedResponse<T> {
