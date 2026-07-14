@@ -4,6 +4,123 @@ import prisma from '../../lib/prisma'
 import { authenticate } from '../../middlewares/auth.middleware'
 
 const router = Router()
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000
+  const φ1 = (lat1 * Math.PI) / 180
+  const φ2 = (lat2 * Math.PI) / 180
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+async function sendWaMsg(phone: string, text: string, settings: any): Promise<void> {
+  if (!settings?.whatsappApiUrl) return
+  try {
+    await axios.post(
+      `${settings.whatsappApiUrl}/message/sendText/${settings.whatsappInstanceId}`,
+      { number: phone, text },
+      { headers: { apikey: settings.whatsappToken ?? process.env.EVOLUTION_API_KEY ?? '' } }
+    )
+  } catch (e) {
+    console.error('WA send error:', e)
+  }
+}
+
+// ─── Webhook público (sem autenticação) ─────────────────────────────────────
+
+router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { data } = req.body
+    if (!data?.message?.locationMessage) {
+      res.status(200).json({ ok: true })
+      return
+    }
+
+    const remoteJid: string = data.key?.remoteJid ?? ''
+    const rawPhone = remoteJid.replace('@s.whatsapp.net', '').replace(/\D/g, '')
+    const { degreesLatitude: lat, degreesLongitude: lng } = data.message.locationMessage
+
+    if (!rawPhone || lat == null || lng == null) {
+      res.status(200).json({ ok: true })
+      return
+    }
+
+    const phone11 = rawPhone.slice(-11)
+    const client = await prisma.client.findFirst({
+      where: {
+        OR: [
+          { phoneNumber: rawPhone },
+          { phoneNumber: phone11 },
+          { phoneNumber: { endsWith: phone11 } },
+        ],
+      },
+      include: { tenant: { include: { settings: true } } },
+    })
+
+    if (!client) {
+      await sendWaMsg(rawPhone, '❌ Número não cadastrado. Contate o administrador.', null)
+      res.status(200).json({ ok: true })
+      return
+    }
+
+    const s = client.tenant?.settings
+    if (!s?.locationLat || !s?.locationLng) {
+      await sendWaMsg(rawPhone, '❌ Localização do estabelecimento não configurada.', s)
+      res.status(200).json({ ok: true })
+      return
+    }
+
+    const dist = haversineDistance(lat, lng, s.locationLat, s.locationLng)
+    const radius = s.locationRadius ?? 100
+
+    if (dist > radius) {
+      await sendWaMsg(rawPhone, `❌ Fora da área (${Math.round(dist)}m de distância, máximo ${radius}m).`, s)
+      res.status(200).json({ ok: true })
+      return
+    }
+
+    const last = await prisma.accessLog.findFirst({
+      where: { clientId: client.id, tenantId: client.tenantId },
+      orderBy: { occurredAt: 'desc' },
+    })
+
+    const direction = !last || last.direction === 'OUT' ? 'IN' : 'OUT'
+    const now = new Date()
+
+    await prisma.accessLog.create({
+      data: {
+        tenantId: client.tenantId,
+        clientId: client.id,
+        cardUid: '',
+        direction: direction as any,
+        eventType: (direction === 'IN' ? 'ENTRY' : 'EXIT') as any,
+        occurredAt: now,
+        latitude: lat,
+        longitude: lng,
+        checkinSource: 'whatsapp',
+      },
+    })
+
+    const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    const msg =
+      direction === 'IN'
+        ? `✅ Entrada às ${time}. Bem-vindo(a), ${client.name}!`
+        : `✅ Saída às ${time}. Até logo, ${client.name}!`
+
+    await sendWaMsg(rawPhone, msg, s)
+    res.status(200).json({ ok: true })
+  } catch (err) {
+    console.error('Webhook error:', err)
+    res.status(500).json({ error: 'Internal error' })
+  }
+})
+
+// ─── Rotas autenticadas ──────────────────────────────────────────────────────
+
 router.use(authenticate)
 
 async function getSettings(tenantId: string) {
@@ -53,19 +170,6 @@ router.post('/qrcode', async (req: Request, res: Response) => {
     return res.json(data)
   } catch (err: any) {
     return res.status(500).json({ error: err.message })
-  }
-})
-
-router.post('/webhook', async (req: Request, res: Response) => {
-  try {
-    const { event, instance, data } = req.body
-    if (event === 'CONNECTION_UPDATE' || event === 'QRCODE_UPDATED') {
-      console.log(`[WhatsApp Webhook] ${event} for ${instance}:`, data)
-    }
-    return res.json({ received: true })
-  } catch (err) {
-    console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
   }
 })
 
