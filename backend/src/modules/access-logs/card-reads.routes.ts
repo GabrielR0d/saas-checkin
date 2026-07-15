@@ -56,6 +56,7 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
           clientId: card?.clientId ?? null,
           deviceId: device.id,
           rawPayload: JSON.stringify(req.body),
+          checkinSource: 'rfid',
         },
         include: {
           client: { select: { id: true, name: true, phone: true } },

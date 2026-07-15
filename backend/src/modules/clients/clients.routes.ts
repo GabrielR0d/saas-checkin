@@ -46,8 +46,9 @@ router.post('/', planLimits('clients'), async (req: Request, res: Response) => {
   try {
     const { name, phone, phoneNumber, email, document } = req.body
     if (!name || !phone) return res.status(400).json({ error: 'name and phone required' })
+    const cleanPhoneNumber = phoneNumber ? String(phoneNumber).replace(/\D/g, '') || null : null
     const client = await prisma.client.create({
-      data: { tenantId: req.user.tenantId, name, phone, phoneNumber: phoneNumber || null, email: email || null, document: document || null },
+      data: { tenantId: req.user.tenantId, name, phone, phoneNumber: cleanPhoneNumber, email: email || null, document: document || null },
     })
     return res.status(201).json(client)
   } catch (err: any) {
@@ -76,12 +77,14 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { name, phone, phoneNumber, email, document, isActive } = req.body
+    const cleanPhoneNumber =
+      phoneNumber === undefined ? undefined : phoneNumber ? String(phoneNumber).replace(/\D/g, '') || null : null
     const updated = await prisma.client.updateMany({
       where: { id: req.params.id, tenantId: req.user.tenantId },
       data: {
         name,
         phone,
-        phoneNumber: phoneNumber ?? undefined,
+        phoneNumber: cleanPhoneNumber,
         email: email ?? undefined,
         document: document ?? undefined,
         isActive: isActive ?? undefined,

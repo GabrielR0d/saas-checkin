@@ -17,18 +17,26 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-async function sendWaMsg(phone: string, text: string, settings: any): Promise<void> {
-  if (!settings?.whatsappApiUrl) return
+async function sendWaMsg(phone: string, text: string, settings: any): Promise<boolean> {
+  if (!settings?.whatsappApiUrl) return false
   try {
     await axios.post(
       `${settings.whatsappApiUrl}/message/sendText/${settings.whatsappInstanceId}`,
       { number: phone, text },
       { headers: { apikey: settings.whatsappToken ?? process.env.EVOLUTION_API_KEY ?? '' } }
     )
+    return true
   } catch (e) {
     console.error('WA send error:', e)
+    return false
   }
 }
+
+// Janela mínima entre check-ins do mesmo cliente: evita duplicidade por
+// reenvio de webhook (retry da Evolution API) e por "localização em tempo
+// real" do WhatsApp, que envia múltiplas atualizações de locationMessage
+// para uma única sessão de compartilhamento.
+const MIN_CHECKIN_INTERVAL_MS = 90 * 1000
 
 // ─── Webhook público (sem autenticação) ─────────────────────────────────────
 
@@ -68,7 +76,7 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
     }
 
     const s = client.tenant?.settings
-    if (!s?.locationLat || !s?.locationLng) {
+    if (s?.locationLat == null || s?.locationLng == null) {
       await sendWaMsg(rawPhone, '❌ Localização do estabelecimento não configurada.', s)
       res.status(200).json({ ok: true })
       return
@@ -88,10 +96,18 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
       orderBy: { occurredAt: 'desc' },
     })
 
-    const direction = !last || last.direction === 'OUT' ? 'IN' : 'OUT'
     const now = new Date()
 
-    await prisma.accessLog.create({
+    if (last && now.getTime() - last.occurredAt.getTime() < MIN_CHECKIN_INTERVAL_MS) {
+      // Provável reenvio de webhook ou atualização de "localização em tempo
+      // real" da mesma sessão de compartilhamento — ignora sem duplicar.
+      res.status(200).json({ ok: true })
+      return
+    }
+
+    const direction = !last || last.direction === 'OUT' ? 'IN' : 'OUT'
+
+    const created = await prisma.accessLog.create({
       data: {
         tenantId: client.tenantId,
         clientId: client.id,
@@ -111,7 +127,10 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
         ? `✅ Entrada às ${time}. Bem-vindo(a), ${client.name}!`
         : `✅ Saída às ${time}. Até logo, ${client.name}!`
 
-    await sendWaMsg(rawPhone, msg, s)
+    const sent = await sendWaMsg(rawPhone, msg, s)
+    if (sent) {
+      await prisma.accessLog.update({ where: { id: created.id }, data: { whatsappSent: true } })
+    }
     res.status(200).json({ ok: true })
   } catch (err) {
     console.error('Webhook error:', err)
