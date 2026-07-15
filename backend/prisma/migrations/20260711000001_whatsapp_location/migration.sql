@@ -11,7 +11,7 @@ ALTER TABLE "TenantSettings" ADD COLUMN IF NOT EXISTS "whatsappEnabled" BOOLEAN 
 -- Campos no AccessLog
 ALTER TABLE "AccessLog" ADD COLUMN IF NOT EXISTS "latitude" DOUBLE PRECISION;
 ALTER TABLE "AccessLog" ADD COLUMN IF NOT EXISTS "longitude" DOUBLE PRECISION;
-ALTER TABLE "AccessLog" ADD COLUMN IF NOT EXISTS "checkinSource" TEXT NOT NULL DEFAULT 'whatsapp';
+ALTER TABLE "AccessLog" ADD COLUMN IF NOT EXISTS "checkinSource" TEXT NOT NULL DEFAULT 'rfid';
 
 -- Tornar cardUid opcional para check-ins sem cartão físico
 ALTER TABLE "AccessLog" ALTER COLUMN "cardUid" DROP NOT NULL;

@@ -149,7 +149,7 @@ model AccessLog {
   card          Card?           @relation(fields: [cardId], references: [id])
   latitude      Float?
   longitude     Float?
-  checkinSource String          @default("whatsapp")
+  checkinSource String          @default("rfid")
 }
 
 model PasswordResetToken {
