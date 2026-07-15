@@ -95,7 +95,7 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
       data: {
         tenantId: client.tenantId,
         clientId: client.id,
-        cardUid: '',
+        cardUid: null,
         direction: direction as any,
         eventType: (direction === 'IN' ? 'ENTRY' : 'EXIT') as any,
         occurredAt: now,
