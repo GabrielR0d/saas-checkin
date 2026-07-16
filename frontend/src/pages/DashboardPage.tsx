@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowDownLeft, ArrowUpRight, HelpCircle, AlertCircle, Activity } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, HelpCircle, Activity, MessageCircle } from 'lucide-react'
 import { api } from '../lib/api'
 import { socket } from '../lib/socket'
 import { useAuth } from '../store/auth'
+import { CheckinSourceBadge } from '../components/CheckinSourceBadge'
 import type { ReportSummary, AccessLog } from '../types'
 
 function relativeTime(dateStr: string) {
@@ -20,7 +21,7 @@ const EVENT_CONFIG = {
   ENTRY: { label: 'ENTRADA', color: 'bg-green-500/20 text-green-400', Icon: ArrowDownLeft },
   EXIT: { label: 'SAÍDA', color: 'bg-blue-500/20 text-blue-400', Icon: ArrowUpRight },
   UNKNOWN_CARD: { label: 'DESCONHECIDO', color: 'bg-yellow-500/20 text-yellow-400', Icon: HelpCircle },
-  BLOCKED_CARD: { label: 'BLOQUEADO', color: 'bg-red-500/20 text-red-400', Icon: AlertCircle },
+  BLOCKED_CARD: { label: 'BLOQUEADO', color: 'bg-red-500/20 text-red-400', Icon: HelpCircle },
 } as const
 
 export function DashboardPage() {
@@ -39,21 +40,16 @@ export function DashboardPage() {
   })
 
   useEffect(() => {
-    if (initialLogs?.data) {
-      setFeed(initialLogs.data)
-    }
+    if (initialLogs?.data) setFeed(initialLogs.data)
   }, [initialLogs])
 
   useEffect(() => {
     if (!user?.tenantId) return
-
     socket.connect()
     socket.emit('join', `tenant:${user.tenantId}`)
-
     socket.on('access:new', (log: AccessLog) => {
       setFeed((prev) => [log, ...prev].slice(0, 20))
     })
-
     return () => {
       socket.off('access:new')
       socket.disconnect()
@@ -76,11 +72,11 @@ export function DashboardPage() {
       bg: 'bg-blue-500/10',
     },
     {
-      label: 'Cartões desconhecidos',
-      value: summary?.unknownCards ?? '—',
-      icon: HelpCircle,
-      color: 'text-yellow-400',
-      bg: 'bg-yellow-500/10',
+      label: 'WhatsApp hoje',
+      value: summary?.todayWhatsappCheckins ?? '—',
+      icon: MessageCircle,
+      color: 'text-green-400',
+      bg: 'bg-green-500/10',
     },
     {
       label: 'Dispositivos ativos',
@@ -129,18 +125,22 @@ export function DashboardPage() {
             {feed.map((log) => {
               const cfg = EVENT_CONFIG[log.eventType] ?? EVENT_CONFIG.UNKNOWN_CARD
               const Icon = cfg.Icon
+              const identifier = log.cardUid
+                ? <span className="font-mono">{log.cardUid}</span>
+                : <span className="text-slate-500 italic">WhatsApp</span>
               return (
-                <li key={log.id} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-800/50 transition-colors">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                <li key={log.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-800/50 transition-colors">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium shrink-0 ${cfg.color}`}>
                     <Icon size={12} />
                     {cfg.label}
                   </span>
-                  <span className="text-sm text-slate-300 font-mono">{log.cardUid}</span>
+                  <CheckinSourceBadge source={log.checkinSource} />
+                  <span className="text-sm text-slate-300 shrink-0">{identifier}</span>
                   <span className="text-sm text-slate-400 truncate flex-1">
                     {log.client?.name ?? <span className="text-slate-600">sem cliente</span>}
                   </span>
-                  <span className="text-sm text-slate-500 shrink-0">{log.device?.name}</span>
-                  <span className="text-xs text-slate-600 shrink-0">{relativeTime(log.createdAt)}</span>
+                  <span className="text-xs text-slate-500 shrink-0 hidden sm:block">{log.device?.name}</span>
+                  <span className="text-xs text-slate-600 shrink-0">{relativeTime(log.occurredAt)}</span>
                 </li>
               )
             })}

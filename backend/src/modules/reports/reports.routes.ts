@@ -12,7 +12,7 @@ router.get('/summary', async (req: Request, res: Response) => {
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
 
-    const [totalClients, totalCards, totalDevices, todayEntries, todayExits, unknownCards] =
+    const [totalClients, totalCards, totalDevices, todayEntries, todayExits, unknownCards, todayWhatsappCheckins] =
       await Promise.all([
         prisma.client.count({ where: { tenantId } }),
         prisma.card.count({ where: { tenantId } }),
@@ -20,9 +20,10 @@ router.get('/summary', async (req: Request, res: Response) => {
         prisma.accessLog.count({ where: { tenantId, eventType: 'ENTRY', occurredAt: { gte: todayStart } } }),
         prisma.accessLog.count({ where: { tenantId, eventType: 'EXIT', occurredAt: { gte: todayStart } } }),
         prisma.accessLog.count({ where: { tenantId, eventType: 'UNKNOWN_CARD', occurredAt: { gte: todayStart } } }),
+        prisma.accessLog.count({ where: { tenantId, checkinSource: 'whatsapp', occurredAt: { gte: todayStart } } }),
       ])
 
-    return res.json({ totalClients, totalCards, totalDevices, todayEntries, todayExits, unknownCards })
+    return res.json({ totalClients, totalCards, totalDevices, todayEntries, todayExits, unknownCards, todayWhatsappCheckins })
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: 'Internal server error' })

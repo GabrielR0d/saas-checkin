@@ -157,7 +157,7 @@ export function ClientDetailPage() {
                 {logs.data.map((log) => (
                   <tr key={log.id} className="border-b border-slate-800 last:border-0">
                     <td className="px-4 py-3 text-slate-300">
-                      {new Date(log.createdAt).toLocaleString('pt-BR')}
+                      {new Date(log.occurredAt).toLocaleString('pt-BR')}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${EVENT_COLORS[log.eventType]}`}>

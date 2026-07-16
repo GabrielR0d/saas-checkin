@@ -41,12 +41,13 @@ export interface Device {
 export interface AccessLog {
   id: string
   eventType: 'ENTRY' | 'EXIT' | 'UNKNOWN_CARD' | 'BLOCKED_CARD'
-  cardUid: string
+  direction?: 'IN' | 'OUT'
+  cardUid?: string | null
   clientId?: string
-  deviceId: string
+  deviceId?: string
   whatsappSent: boolean
   checkinSource?: 'whatsapp' | 'rfid' | null
-  createdAt: string
+  occurredAt: string
   client?: Pick<Client, 'id' | 'name'>
   device?: Pick<Device, 'id' | 'name'>
   card?: Pick<Card, 'id' | 'uid' | 'label'>
@@ -59,6 +60,7 @@ export interface ReportSummary {
   todayEntries: number
   todayExits: number
   unknownCards: number
+  todayWhatsappCheckins: number
 }
 
 export interface Settings {
