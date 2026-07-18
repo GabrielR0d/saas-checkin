@@ -35,8 +35,8 @@ router.get('/plans', (_req, res) => res.json(PLANS))
 router.post('/checkout', authenticate, async (req: Request, res: Response) => {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-    const { plan } = req.body
-    const planData = PLANS.find((p) => p.id === plan)
+    const { planId, plan } = req.body
+    const planData = PLANS.find((p) => p.id === (planId ?? plan))
     if (!planData?.priceId) return res.status(400).json({ error: 'Invalid plan or no priceId configured' })
 
     const origin = req.headers.origin || process.env.FRONTEND_URL || 'http://localhost:5173'

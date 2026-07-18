@@ -54,6 +54,7 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
           eventType,
           direction,
           clientId: card?.clientId ?? null,
+          cardId: card?.id ?? null,
           deviceId: device.id,
           rawPayload: JSON.stringify(req.body),
           checkinSource: 'rfid',
