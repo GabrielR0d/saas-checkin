@@ -87,6 +87,42 @@ router.post('/webhook', async (req: Request, res: Response) => {
         })
       }
     }
+
+    // Subscription cancelled or expired → downgrade to FREE
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription
+      const tenant = await prisma.tenant.findFirst({
+        where: { stripeSubscriptionId: subscription.id },
+      })
+      if (tenant) {
+        await prisma.tenant.update({
+          where: { id: tenant.id },
+          data: { plan: 'FREE', stripeSubscriptionId: null },
+        })
+        console.log(`[Billing] Subscription ${subscription.id} cancelled → tenant ${tenant.id} downgraded to FREE`)
+      }
+    }
+
+    // Plan changed mid-cycle (e.g. upgrade/downgrade via Stripe portal)
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription
+      const tenant = await prisma.tenant.findFirst({
+        where: { stripeSubscriptionId: subscription.id },
+      })
+      if (tenant) {
+        // Find which of our plans matches the active price
+        const priceId = subscription.items.data[0]?.price?.id
+        const matched = PLANS.find((p) => p.priceId === priceId)
+        if (matched) {
+          await prisma.tenant.update({
+            where: { id: tenant.id },
+            data: { plan: matched.id as any },
+          })
+          console.log(`[Billing] Subscription updated → tenant ${tenant.id} now on ${matched.id}`)
+        }
+      }
+    }
+
     return res.json({ received: true })
   } catch (err: any) {
     console.error('[Stripe Webhook]', err.message)

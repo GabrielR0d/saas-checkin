@@ -133,7 +133,12 @@ export function ClientsPage() {
                   className="border-b border-slate-800 last:border-0 hover:bg-slate-800/50 cursor-pointer transition-colors"
                 >
                   <td className="px-4 py-3 font-medium text-slate-100">{client.name}</td>
-                  <td className="px-4 py-3 text-slate-300">{client.phone}</td>
+                  <td className="px-4 py-3 text-slate-300">
+                    <span>{client.phone}</span>
+                    {client.phoneNumber && (
+                      <span className="ml-1.5 text-xs text-green-400" title={`WhatsApp: ${client.phoneNumber}`}>📱</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-slate-300">{client.email || '—'}</td>
                   <td className="px-4 py-3 text-slate-300">{client.document || '—'}</td>
                   <td className="px-4 py-3">
