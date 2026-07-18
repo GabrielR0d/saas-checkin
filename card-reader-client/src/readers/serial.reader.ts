@@ -21,7 +21,7 @@ export class SerialReader extends EventEmitter {
         this.emit('card', uid)
       }
     })
-    this.port.on('error', (err) => {
+    this.port.on('error', (err: Error) => {
       console.error('[Serial] Error:', err.message)
       this.emit('error', err)
     })
@@ -39,7 +39,7 @@ export class SerialReader extends EventEmitter {
 
   close(): Promise<void> {
     return new Promise((resolve) => {
-      this.port.close(() => resolve())
+      this.port.close((_err: Error | null) => resolve())
     })
   }
 }
