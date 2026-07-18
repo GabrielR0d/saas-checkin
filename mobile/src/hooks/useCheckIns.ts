@@ -6,7 +6,7 @@ export function useCheckIns(limit = 50) {
   return useQuery<AccessLog[]>({
     queryKey: ['access-logs', limit],
     queryFn: async () => {
-      const res = await api.get(`/access-logs?limit=${limit}`)
+      const res = await api.get('/access-logs', { params: { limit } })
       return res.data?.data ?? []
     },
     refetchInterval: 10_000,

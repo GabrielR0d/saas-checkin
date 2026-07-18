@@ -36,7 +36,7 @@ export function DashboardPage() {
 
   const { data: initialLogs } = useQuery<{ data: AccessLog[] }>({
     queryKey: ['access-logs/recent'],
-    queryFn: async () => (await api.get('/access-logs?page=1&limit=20')).data,
+    queryFn: async () => (await api.get('/access-logs', { params: { page: 1, limit: 20 } })).data,
   })
 
   useEffect(() => {

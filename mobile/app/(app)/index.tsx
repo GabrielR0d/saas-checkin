@@ -4,12 +4,9 @@ import {
   FlatList,
   StyleSheet,
   RefreshControl,
-  TouchableOpacity,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { router } from 'expo-router'
 import { useCheckIns } from '../../src/hooks/useCheckIns'
-import { clearToken, clearUser } from '../../src/lib/auth'
 import type { AccessLog, AccessEventType } from '../../src/types'
 
 const EVENT_CONFIG: Record<
@@ -53,17 +50,8 @@ function LogCard({ item }: { item: AccessLog }) {
 export default function DashboardScreen() {
   const { data: logs, isLoading, refetch } = useCheckIns(50)
 
-  async function handleLogout() {
-    await clearToken()
-    await clearUser()
-    router.replace('/(auth)/login')
-  }
-
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={22} color="#94a3b8" />
-      </TouchableOpacity>
       <FlatList
         data={logs ?? []}
         keyExtractor={(i) => i.id}
@@ -83,7 +71,6 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
-  logoutBtn: { position: 'absolute', top: 12, right: 16, zIndex: 10 },
   list: { padding: 16, paddingTop: 8 },
   card: {
     flexDirection: 'row',

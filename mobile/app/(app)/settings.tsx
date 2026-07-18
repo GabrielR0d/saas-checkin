@@ -6,13 +6,37 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
 import { api } from '../../src/lib/api'
+import { clearToken, clearUser, getUser } from '../../src/lib/auth'
 import type { TenantSettings } from '../../src/types'
 
 export default function SettingsScreen() {
   const queryClient = useQueryClient()
+
+  const { data: user } = useQuery({
+    queryKey: ['local-user'],
+    queryFn: () => getUser(),
+  })
+
+  async function handleLogout() {
+    Alert.alert('Sair', 'Tem a certeza que quer terminar a sessão?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: async () => {
+          await clearToken()
+          await clearUser()
+          router.replace('/(auth)/login')
+        },
+      },
+    ])
+  }
 
   const { data: settings, isLoading } = useQuery<TenantSettings>({
     queryKey: ['settings'],
@@ -97,6 +121,27 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      {/* Account section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Conta</Text>
+        {user ? (
+          <>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Nome</Text>
+              <Text style={styles.infoValue}>{user.name}</Text>
+            </View>
+            <View style={[styles.infoRow, { borderTopWidth: 1, borderTopColor: '#334155', paddingTop: 12, marginTop: 4 }]}>
+              <Text style={styles.infoLabel}>Email</Text>
+              <Text style={[styles.infoValue, { fontSize: 13 }]} numberOfLines={1}>{user.email}</Text>
+            </View>
+          </>
+        ) : null}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={18} color="#f87171" />
+          <Text style={styles.logoutText}>Terminar sessão</Text>
+        </TouchableOpacity>
+      </View>
+
       {settings.whatsappProvider ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>WhatsApp</Text>
@@ -158,4 +203,14 @@ const styles = StyleSheet.create({
   infoLabel: { color: '#94a3b8', fontSize: 14 },
   infoValue: { color: '#f1f5f9', fontSize: 14, fontWeight: '500', maxWidth: '60%' },
   infoValueMono: { fontSize: 12 },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 8,
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#334155',
+  },
+  logoutText: { color: '#f87171', fontSize: 15, fontWeight: '600' },
 })
