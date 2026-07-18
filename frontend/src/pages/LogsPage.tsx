@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Download, ChevronLeft, ChevronRight } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { api } from '../lib/api'
 import { CheckinSourceBadge } from '../components/CheckinSourceBadge'
 import type { AccessLog, Device, PaginatedResponse } from '../types'
@@ -55,14 +56,31 @@ export function LogsPage() {
 
   const totalPages = data?.meta?.totalPages ?? 1
 
-  function exportCsv() {
+  async function exportCsv() {
     const params = new URLSearchParams({
       ...(eventType && { eventType }),
       ...(deviceId && { deviceId }),
+      ...(checkinSource && { checkinSource }),
       ...(dateFrom && { dateFrom }),
       ...(dateTo && { dateTo }),
     })
-    window.open(`${import.meta.env.VITE_API_URL || '/api/v1'}/reports/export/csv?${params}`, '_blank')
+    try {
+      const token = localStorage.getItem('token')
+      const base = import.meta.env.VITE_API_URL || '/api/v1'
+      const res = await fetch(`${base}/reports/export/csv?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `registros-${new Date().toISOString().slice(0, 10)}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Erro ao exportar CSV')
+    }
   }
 
   return (

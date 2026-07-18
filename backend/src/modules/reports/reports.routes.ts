@@ -37,6 +37,7 @@ router.get('/export/csv', async (req: Request, res: Response) => {
     if (req.query.eventType) where.eventType = req.query.eventType
     if (req.query.clientId) where.clientId = req.query.clientId
     if (req.query.deviceId) where.deviceId = req.query.deviceId
+    if (req.query.checkinSource) where.checkinSource = req.query.checkinSource
     if (req.query.dateFrom || req.query.dateTo) {
       where.occurredAt = {}
       if (req.query.dateFrom) where.occurredAt.gte = new Date(req.query.dateFrom as string)
@@ -62,6 +63,7 @@ router.get('/export/csv', async (req: Request, res: Response) => {
         clientPhone: 'Telefone',
         cardUid: 'UID Cartão',
         eventType: 'Evento',
+        checkinSource: 'Origem',
         deviceName: 'Dispositivo',
       },
     })
@@ -73,8 +75,9 @@ router.get('/export/csv', async (req: Request, res: Response) => {
         occurredAt: log.occurredAt.toLocaleString('pt-BR'),
         clientName: log.client?.name ?? '',
         clientPhone: log.client?.phone ?? '',
-        cardUid: log.cardUid,
+        cardUid: log.cardUid ?? '',
         eventType: log.eventType,
+        checkinSource: log.checkinSource ?? 'rfid',
         deviceName: log.device?.name ?? '',
       })
     }
