@@ -1,4 +1,6 @@
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 import { Check, Zap } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
@@ -13,6 +15,17 @@ interface Plan {
 }
 
 export function BillingPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const qc = useQueryClient()
+
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      toast.success('Plano ativado com sucesso!')
+      qc.invalidateQueries({ queryKey: ['billing/me'] })
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams, qc])
+
   const { data: plans, isLoading } = useQuery<Plan[]>({
     queryKey: ['billing/plans'],
     queryFn: async () => (await api.get('/billing/plans')).data,

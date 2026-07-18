@@ -56,8 +56,8 @@ router.post('/checkout', authenticate, async (req: Request, res: Response) => {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: planData.priceId, quantity: 1 }],
-      success_url: `${origin}/plans?success=true`,
-      cancel_url: `${origin}/plans`,
+      success_url: `${origin}/billing?success=true`,
+      cancel_url: `${origin}/billing`,
       metadata: { tenantId: req.user.tenantId, plan: planId ?? plan },
     })
     return res.json({ url: session.url })
