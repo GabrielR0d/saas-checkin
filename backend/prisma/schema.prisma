@@ -102,6 +102,9 @@ model Client {
   createdAt   DateTime    @default(now())
   cards       Card[]
   accessLogs  AccessLog[]
+
+  @@index([tenantId, isActive])
+  @@index([tenantId, createdAt(sort: Desc)])
 }
 
 model Card {
@@ -116,6 +119,9 @@ model Card {
   lastSeenAt DateTime?
   createdAt  DateTime    @default(now())
   accessLogs AccessLog[]
+
+  @@index([tenantId, uid])
+  @@index([tenantId, clientId])
 }
 
 model Device {
@@ -150,6 +156,12 @@ model AccessLog {
   latitude      Float?
   longitude     Float?
   checkinSource String          @default("rfid")
+
+  // Indexes for frequent query patterns
+  @@index([tenantId, occurredAt(sort: Desc)])
+  @@index([tenantId, clientId, occurredAt(sort: Desc)])
+  @@index([tenantId, cardUid, occurredAt(sort: Desc)])
+  @@index([tenantId, eventType, occurredAt(sort: Desc)])
 }
 
 model PasswordResetToken {
