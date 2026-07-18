@@ -15,6 +15,7 @@ router.get('/', async (req: Request, res: Response) => {
     const skip = (page - 1) * limit
 
     const where: any = { tenantId }
+    if (req.query.clientId) where.clientId = req.query.clientId as string
     if (search) {
       where.OR = [
         { uid: { contains: search, mode: 'insensitive' } },

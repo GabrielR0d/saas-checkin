@@ -19,7 +19,10 @@ router.get('/', async (req: Request, res: Response) => {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search } },
+        { phone: { contains: search, mode: 'insensitive' } },
+        { phoneNumber: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { document: { contains: search, mode: 'insensitive' } },
       ]
     }
 

@@ -54,14 +54,14 @@ export function CardsPage() {
     onError: () => toast.error('Erro ao criar cartão'),
   })
 
-  const totalPages = data ? Math.ceil(data.total / 20) : 1
+  const totalPages = data?.meta?.totalPages ?? 1
 
   return (
     <div className="p-6 space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Cartões</h1>
-          <p className="text-slate-400 text-sm mt-1">{data?.total ?? 0} cartões cadastrados</p>
+          <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} cartões cadastrados</p>
         </div>
         <button
           onClick={() => setShowModal(true)}

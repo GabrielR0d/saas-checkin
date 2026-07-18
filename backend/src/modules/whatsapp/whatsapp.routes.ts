@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import axios from 'axios'
 import prisma from '../../lib/prisma'
 import { authenticate } from '../../middlewares/auth.middleware'
+import { emitToTenant } from '../../config/socket'
 
 const router = Router()
 
@@ -131,6 +132,15 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
     if (sent) {
       await prisma.accessLog.update({ where: { id: created.id }, data: { whatsappSent: true } })
     }
+
+    // Emite para o dashboard em tempo real
+    emitToTenant(client.tenantId, 'access:new', {
+      ...created,
+      whatsappSent: sent,
+      client: { id: client.id, name: client.name, phone: client.phone },
+      device: null,
+    })
+
     res.status(200).json({ ok: true })
   } catch (err) {
     console.error('Webhook error:', err)
