@@ -20,7 +20,13 @@ router.get('/', async (req: Request, res: Response) => {
     if (req.query.dateFrom || req.query.dateTo) {
       where.occurredAt = {}
       if (req.query.dateFrom) where.occurredAt.gte = new Date(req.query.dateFrom as string)
-      if (req.query.dateTo) where.occurredAt.lte = new Date(req.query.dateTo as string)
+      if (req.query.dateTo) {
+        // Set to end-of-day UTC so the full selected date is included
+        // (avoids cutting off records after 21:00 in UTC-3 timezone)
+        const d = new Date(req.query.dateTo as string)
+        d.setUTCHours(23, 59, 59, 999)
+        where.occurredAt.lte = d
+      }
     }
 
     const [data, total] = await Promise.all([
