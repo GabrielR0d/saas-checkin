@@ -11,10 +11,11 @@ export type AccessDirection = 'IN' | 'OUT'
 
 export interface AccessLog {
   id: string
-  cardUid: string
+  cardUid: string | null
   eventType: AccessEventType
   direction: AccessDirection
   occurredAt: string
+  checkinSource: 'rfid' | 'whatsapp' | null
   client: { id: string; name: string; phone: string } | null
   device: { id: string; name: string; location: string | null } | null
 }

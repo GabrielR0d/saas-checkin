@@ -31,15 +31,25 @@ function timeAgo(dateStr: string): string {
 
 function LogCard({ item }: { item: AccessLog }) {
   const cfg = EVENT_CONFIG[item.eventType]
+  const isWhatsApp = item.checkinSource === 'whatsapp'
   return (
     <View style={styles.card}>
       <View style={[styles.badge, { backgroundColor: cfg.bg }]}>
         <Ionicons name={cfg.icon as any} size={16} color="#fff" />
       </View>
       <View style={styles.info}>
-        <Text style={styles.name}>{item.client?.name ?? item.cardUid}</Text>
+        <View style={styles.nameRow}>
+          <Text style={styles.name} numberOfLines={1}>
+            {item.client?.name ?? item.cardUid ?? '—'}
+          </Text>
+          {isWhatsApp && (
+            <View style={styles.waBadge}>
+              <Text style={styles.waBadgeText}>WA</Text>
+            </View>
+          )}
+        </View>
         <Text style={styles.sub}>
-          {item.device?.name ?? 'Dispositivo desconhecido'} · {timeAgo(item.occurredAt)}
+          {item.device?.name ?? (isWhatsApp ? 'WhatsApp' : 'Dispositivo desconhecido')} · {timeAgo(item.occurredAt)}
         </Text>
       </View>
       <Text style={[styles.eventLabel, { color: cfg.color }]}>{cfg.label}</Text>
@@ -90,8 +100,11 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   info: { flex: 1 },
-  name: { color: '#f1f5f9', fontWeight: '600', fontSize: 15 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  name: { color: '#f1f5f9', fontWeight: '600', fontSize: 15, flexShrink: 1 },
+  waBadge: { backgroundColor: '#166534', borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 },
+  waBadgeText: { color: '#4ade80', fontSize: 10, fontWeight: '700' },
   sub: { color: '#64748b', fontSize: 13, marginTop: 2 },
-  eventLabel: { fontSize: 13, fontWeight: '600' },
+  eventLabel: { fontSize: 13, fontWeight: '600', marginLeft: 8 },
   empty: { color: '#64748b', textAlign: 'center', marginTop: 40 },
 })
