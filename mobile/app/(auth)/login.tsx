@@ -43,8 +43,8 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.inner}>
-        <Text style={styles.title}>SaaS Check-in</Text>
-        <Text style={styles.subtitle}>Aceda à sua conta</Text>
+        <Text style={styles.title}>CheckIn SaaS</Text>
+        <Text style={styles.subtitle}>Entre na sua conta</Text>
 
         <TextInput
           style={styles.input}
@@ -58,7 +58,7 @@ export default function LoginScreen() {
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder="Senha"
           placeholderTextColor="#64748b"
           value={password}
           onChangeText={setPassword}

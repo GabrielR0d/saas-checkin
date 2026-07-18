@@ -162,6 +162,7 @@ model AccessLog {
   @@index([tenantId, clientId, occurredAt(sort: Desc)])
   @@index([tenantId, cardUid, occurredAt(sort: Desc)])
   @@index([tenantId, eventType, occurredAt(sort: Desc)])
+  @@index([tenantId, checkinSource, occurredAt(sort: Desc)])
 }
 
 model PasswordResetToken {

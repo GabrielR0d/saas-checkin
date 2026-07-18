@@ -14,8 +14,9 @@ export function ForgotPasswordPage() {
     try {
       await api.post('/auth/forgot-password', { email })
       setSent(true)
-    } catch {
-      toast.error('Erro ao enviar email. Tente novamente.')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      toast.error(msg || 'Erro ao enviar email. Tente novamente.')
     } finally {
       setLoading(false)
     }
