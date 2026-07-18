@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Check, X, Loader } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
 import { useAuth } from '../store/auth'
@@ -23,7 +24,24 @@ export function SignupPage() {
     slug: '',
   })
   const [loading, setLoading] = useState(false)
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
   const navigate = useNavigate()
+
+  // Debounced slug availability check
+  useEffect(() => {
+    const slug = form.slug
+    if (!slug || slug.length < 2) { setSlugStatus('idle'); return }
+    setSlugStatus('checking')
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await api.get('/auth/check-slug', { params: { slug } })
+        setSlugStatus(data.available ? 'available' : 'taken')
+      } catch {
+        setSlugStatus('idle')
+      }
+    }, 500)
+    return () => clearTimeout(t)
+  }, [form.slug])
 
   function setField(field: string, value: string) {
     setForm((prev) => {
@@ -117,20 +135,43 @@ export function SignupPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5">Slug (URL)</label>
-              <input
-                type="text"
-                value={form.slug}
-                onChange={(e) => setField('slug', e.target.value)}
-                required
-                placeholder="minha-academia"
-                className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
-              />
-              <p className="mt-1 text-xs text-slate-500">Usado como identificador único do seu negócio</p>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={form.slug}
+                  onChange={(e) => { setField('slug', e.target.value); setSlugStatus('idle') }}
+                  required
+                  placeholder="minha-academia"
+                  className={`w-full bg-slate-800 border text-slate-100 rounded-lg px-3 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 placeholder:text-slate-500 ${
+                    slugStatus === 'taken'
+                      ? 'border-red-500 focus:ring-red-500'
+                      : slugStatus === 'available'
+                      ? 'border-green-500 focus:ring-green-500'
+                      : 'border-slate-700 focus:ring-indigo-500'
+                  }`}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {slugStatus === 'checking' && <Loader size={14} className="text-slate-500 animate-spin" />}
+                  {slugStatus === 'available' && <Check size={14} className="text-green-400" />}
+                  {slugStatus === 'taken' && <X size={14} className="text-red-400" />}
+                </span>
+              </div>
+              <p className={`mt-1 text-xs ${
+                slugStatus === 'taken' ? 'text-red-400' :
+                slugStatus === 'available' ? 'text-green-400' :
+                'text-slate-500'
+              }`}>
+                {slugStatus === 'taken'
+                  ? 'Este slug já está em uso'
+                  : slugStatus === 'available'
+                  ? 'Disponível!'
+                  : 'Usado como identificador único do seu negócio'}
+              </p>
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || slugStatus === 'taken' || slugStatus === 'checking'}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2.5 text-sm font-medium transition-colors mt-2"
             >
               {loading ? 'Criando conta...' : 'Criar conta'}
