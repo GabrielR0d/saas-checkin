@@ -34,7 +34,7 @@ async function main() {
     } catch (e) {
       console.error('[Heartbeat] Offline sweep failed:', e)
     }
-  }, 60_000) // run every minute
+  }, 60_000).unref() // run every minute; .unref() prevents this from blocking shutdown
 
   const shutdown = async () => {
     console.log('[Server] Shutting down...')

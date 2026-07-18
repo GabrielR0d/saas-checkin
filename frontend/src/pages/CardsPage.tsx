@@ -48,6 +48,8 @@ export function CardsPage() {
   const qc = useQueryClient()
 
   const debouncedSearch = useDebounce(search)
+  const debouncedClientSearch = useDebounce(clientSearch)
+  const debouncedEditClientSearch = useDebounce(editClientSearch)
 
   const { data, isLoading } = useQuery<PaginatedResponse<Card>>({
     queryKey: ['cards', page, debouncedSearch],
@@ -56,9 +58,11 @@ export function CardsPage() {
   })
 
   const { data: clients } = useQuery<PaginatedResponse<Client>>({
-    queryKey: ['clients-select', clientSearch],
-    queryFn: async () =>
-      (await api.get('/clients', { params: { limit: 20, search: clientSearch || undefined } })).data,
+    queryKey: ['clients-select', showModal ? debouncedClientSearch : debouncedEditClientSearch],
+    queryFn: async () => {
+      const search = showModal ? debouncedClientSearch : debouncedEditClientSearch
+      return (await api.get('/clients', { params: { limit: 20, search: search || undefined } })).data
+    },
     enabled: showModal || !!editCard,
   })
 
