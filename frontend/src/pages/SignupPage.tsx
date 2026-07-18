@@ -44,8 +44,12 @@ export function SignupPage() {
       toast.success('Conta criada com sucesso! Bem-vindo(a)!')
       navigate('/')
     } catch (err: unknown) {
-      const errData = (err as { response?: { data?: { error?: string; message?: string } } })?.response?.data
-      const msg = errData?.error ?? errData?.message
+      const errData = (err as { response?: { data?: { error?: unknown; message?: string } } })?.response?.data
+      const rawError = errData?.error
+      // Zod validation errors come back as an array of { message } objects
+      const msg = Array.isArray(rawError)
+        ? (rawError as { message: string }[]).map((e) => e.message).join(', ')
+        : (rawError as string | undefined) ?? errData?.message
       toast.error(msg || 'Erro ao criar conta')
     } finally {
       setLoading(false)

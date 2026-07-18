@@ -17,7 +17,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only redirect to /login on session expiry — NOT on auth failures from
+    // public endpoints like /auth/login (wrong credentials also return 401).
+    // If there's no token in storage, the user is on a public page and the
+    // error should surface to the calling code (e.g., show a toast).
+    if (error.response?.status === 401 && localStorage.getItem('token')) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login'
