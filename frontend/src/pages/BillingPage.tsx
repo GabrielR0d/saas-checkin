@@ -47,14 +47,14 @@ export function BillingPage() {
     {
       id: 'BASIC',
       name: 'Basic',
-      price: 49,
+      price: 4900,
       interval: 'mês',
       features: ['Até 500 participantes', '10 dispositivos', 'Histórico ilimitado', 'Notificações WhatsApp', 'Suporte prioritário'],
     },
     {
       id: 'PRO',
       name: 'Pro',
-      price: 149,
+      price: 14900,
       interval: 'mês',
       features: ['Participantes ilimitados', 'Dispositivos ilimitados', 'Histórico ilimitado', 'WhatsApp + SMS', 'App mobile'],
     },
@@ -109,8 +109,10 @@ export function BillingPage() {
                   ) : (
                     <div className="flex items-baseline gap-1">
                       <span className="text-xs text-slate-400">R$</span>
-                      <span className="text-3xl font-bold text-slate-100">{plan.price}</span>
-                      <span className="text-sm text-slate-400">/{plan.interval}</span>
+                      <span className="text-3xl font-bold text-slate-100">
+                        {(plan.price / 100).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      </span>
+                      <span className="text-sm text-slate-400">/{plan.interval ?? 'mês'}</span>
                     </div>
                   )}
                 </div>
