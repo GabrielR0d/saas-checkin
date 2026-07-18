@@ -61,7 +61,7 @@ export function ClientsPage() {
       if (err?.response?.data?.error === 'PLAN_LIMIT') {
         toast.error(`Limite do plano atingido (${err.response.data.current}/${err.response.data.limit}). Faça upgrade em Planos.`)
       } else {
-        toast.error('Erro ao criar participante')
+        toast.error(err?.response?.data?.error ?? 'Erro ao criar participante')
       }
     },
   })
