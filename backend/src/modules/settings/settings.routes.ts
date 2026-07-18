@@ -22,10 +22,20 @@ router.patch('/', async (req: Request, res: Response) => {
       whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl,
       whatsappEnabled, locationLat, locationLng, locationRadius,
     } = req.body
+
+    // Normalize empty strings to null for optional string fields
+    const nullIfEmpty = (v: unknown) => (v === '' || v == null ? null : String(v))
+
     const data = {
       notifyOnEntry, notifyOnExit, notifyOnUnknown,
-      whatsappProvider, whatsappInstanceId, whatsappToken, whatsappApiUrl,
-      whatsappEnabled, locationLat, locationLng, locationRadius,
+      whatsappProvider: nullIfEmpty(whatsappProvider),
+      whatsappInstanceId: nullIfEmpty(whatsappInstanceId),
+      whatsappToken: nullIfEmpty(whatsappToken),
+      whatsappApiUrl: nullIfEmpty(whatsappApiUrl),
+      whatsappEnabled,
+      locationLat: locationLat ?? null,
+      locationLng: locationLng ?? null,
+      locationRadius,
     }
     const settings = await prisma.tenantSettings.upsert({
       where: { tenantId: req.user.tenantId },
