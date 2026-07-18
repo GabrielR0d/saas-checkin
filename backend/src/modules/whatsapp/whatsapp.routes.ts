@@ -59,6 +59,14 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
     }
 
     const phone11 = rawPhone.slice(-11)
+
+    // Try to identify which tenant this webhook belongs to via instance name
+    // (Evolution API sends { instance: "instanceName", data: { ... } } at top level)
+    const instanceName: string | undefined = req.body.instance ?? req.body.instanceName
+    const tenantSettingsByInstance = instanceName
+      ? await prisma.tenantSettings.findFirst({ where: { whatsappInstanceId: instanceName } })
+      : null
+
     const client = await prisma.client.findFirst({
       where: {
         OR: [
@@ -71,7 +79,10 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
     })
 
     if (!client) {
-      await sendWaMsg(rawPhone, '❌ Número não cadastrado. Contate o administrador.', null)
+      // Reply using the tenant's settings (found via instance name) so the sender knows they're not registered
+      if (tenantSettingsByInstance) {
+        await sendWaMsg(rawPhone, '❌ Número não cadastrado. Contate o administrador.', tenantSettingsByInstance)
+      }
       res.status(200).json({ ok: true })
       return
     }

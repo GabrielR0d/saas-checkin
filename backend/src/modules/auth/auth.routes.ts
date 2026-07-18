@@ -99,7 +99,15 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
         data: { token, email, expiresAt: new Date(Date.now() + 3_600_000) },
       })
       const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`
-      await sendMail(email, 'Reset your password', `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`)
+      await sendMail(
+        email,
+        'Redefinição de senha — CheckIn SaaS',
+        `<p>Olá!</p>
+         <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
+         <p><a href="${resetUrl}">Clique aqui para redefinir sua senha</a></p>
+         <p>Este link expira em 1 hora. Se você não solicitou a redefinição, ignore este email.</p>
+         <p>— Equipe CheckIn SaaS</p>`
+      )
     }
     return res.json({ success: true }) // Always 200 — no email enumeration
   } catch (err) {

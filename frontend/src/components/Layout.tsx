@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { to: '/devices', icon: Wifi, label: 'Dispositivos' },
   { to: '/logs', icon: ClipboardList, label: 'Histórico' },
   { to: '/settings', icon: Settings, label: 'Configurações' },
-  { to: '/billing', icon: Zap, label: 'Billing' },
+  { to: '/billing', icon: Zap, label: 'Planos' },
 ]
 
 export function Layout() {
