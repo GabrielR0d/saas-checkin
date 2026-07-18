@@ -16,6 +16,26 @@ async function main() {
     console.log(`[Server] Listening on http://localhost:${PORT}`)
   })
 
+  // Mark devices offline if no heartbeat in the last 5 minutes
+  const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000
+  setInterval(async () => {
+    try {
+      const cutoff = new Date(Date.now() - OFFLINE_THRESHOLD_MS)
+      await prisma.device.updateMany({
+        where: {
+          isOnline: true,
+          OR: [
+            { lastHeartbeat: null },
+            { lastHeartbeat: { lt: cutoff } },
+          ],
+        },
+        data: { isOnline: false },
+      })
+    } catch (e) {
+      console.error('[Heartbeat] Offline sweep failed:', e)
+    }
+  }, 60_000) // run every minute
+
   const shutdown = async () => {
     console.log('[Server] Shutting down...')
     await prisma.$disconnect()

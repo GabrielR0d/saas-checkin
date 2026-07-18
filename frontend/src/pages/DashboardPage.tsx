@@ -46,7 +46,6 @@ export function DashboardPage() {
   useEffect(() => {
     if (!user?.tenantId) return
     socket.connect()
-    socket.emit('join', `tenant:${user.tenantId}`)
     socket.on('access:new', (log: AccessLog) => {
       setFeed((prev) => [log, ...prev].slice(0, 20))
     })

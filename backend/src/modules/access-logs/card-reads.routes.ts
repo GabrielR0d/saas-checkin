@@ -24,7 +24,7 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
     // 2. Find card
     const card = await prisma.card.findFirst({
       where: { uid: cardUid, tenantId },
-      include: { client: true },
+      include: { client: { select: { id: true, name: true, phone: true, phoneNumber: true } } },
     })
 
     // 3. Determine event type and direction
@@ -75,17 +75,20 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
     if (card?.client && (eventType === 'ENTRY' || eventType === 'EXIT')) {
       const settings = await prisma.tenantSettings.findUnique({ where: { tenantId } })
       const shouldNotify = eventType === 'ENTRY' ? settings?.notifyOnEntry : settings?.notifyOnExit
+      // Use whatsapp-formatted number (phoneNumber) if set; fall back to raw phone
+      const waNumber = card.client.phoneNumber || card.client.phone?.replace(/\D/g, '')
 
-      if (shouldNotify && settings?.whatsappApiUrl && settings?.whatsappInstanceId && settings?.whatsappToken) {
+      if (shouldNotify && settings?.whatsappApiUrl && settings?.whatsappInstanceId && settings?.whatsappToken && waNumber) {
+        const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
         const msg = eventType === 'ENTRY'
-          ? `✅ *${card.client.name}* registrou *entrada* agora.`
-          : `👋 *${card.client.name}* registrou *saída* agora.`
+          ? `✅ Entrada às ${time}. Bem-vindo(a), *${card.client.name}*!`
+          : `👋 Saída às ${time}. Até logo, *${card.client.name}*!`
 
         axios
           .post(
             `${settings.whatsappApiUrl}/message/sendText/${settings.whatsappInstanceId}`,
-            { number: card.client.phone, text: msg },
-            { headers: { Authorization: `Bearer ${settings.whatsappToken}` } }
+            { number: waNumber, text: msg },
+            { headers: { apikey: settings.whatsappToken } }
           )
           .catch((err) => console.error('[WhatsApp] Send failed:', err.message))
       }
