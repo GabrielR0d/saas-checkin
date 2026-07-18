@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Save, Copy, Check, MapPin, Locate, Search } from 'lucide-react'
+import { Save, Copy, Check, MapPin, Locate, Search, Wifi, WifiOff, QrCode, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
 import type { Settings } from '../types'
@@ -36,6 +36,8 @@ export function SettingsPage() {
   const [addressQuery, setAddressQuery] = useState('')
   const [geoLocating, setGeoLocating] = useState(false)
   const [addressSearching, setAddressSearching] = useState(false)
+  const [qrImage, setQrImage] = useState<string | null>(null)
+  const [loadingQr, setLoadingQr] = useState(false)
   const debouncedAddress = useDebounce(addressQuery, 700)
   const mapRef = useRef<HTMLIFrameElement>(null)
 
@@ -43,6 +45,42 @@ export function SettingsPage() {
     queryKey: ['settings'],
     queryFn: async () => (await api.get('/settings')).data,
   })
+
+  // WhatsApp connection status — only poll when API URL is configured
+  const hasWaConfig = !!(settings?.whatsappApiUrl && settings?.whatsappInstanceId)
+  const { data: waStatus, refetch: refetchWaStatus, isFetching: waStatusFetching } = useQuery<any>({
+    queryKey: ['whatsapp-status'],
+    queryFn: async () => (await api.get('/whatsapp/status')).data,
+    enabled: hasWaConfig,
+    refetchInterval: 30_000,
+    retry: false,
+  })
+
+  // Derive connected state from Evolution API response
+  const waInstances: any[] = Array.isArray(waStatus) ? waStatus : []
+  const instanceName = settings?.whatsappInstanceId ?? ''
+  const myInstance = waInstances.find(
+    (i: any) => i.name === instanceName || i.instance?.instanceName === instanceName
+  )
+  const waConnected = myInstance?.state === 'open' || myInstance?.instance?.state === 'open'
+
+  async function generateQr() {
+    setLoadingQr(true)
+    setQrImage(null)
+    try {
+      const { data } = await api.post('/whatsapp/qrcode')
+      const b64 = data?.base64 ?? data?.qrcode?.base64 ?? data?.code
+      if (b64) {
+        setQrImage(b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`)
+      } else {
+        toast.error('QR Code não retornado pela API')
+      }
+    } catch {
+      toast.error('Erro ao gerar QR Code')
+    } finally {
+      setLoadingQr(false)
+    }
+  }
 
   useEffect(() => {
     if (settings) {
@@ -235,6 +273,61 @@ export function SettingsPage() {
           </p>
         </div>
       </div>
+
+      {/* WhatsApp connection status */}
+      {hasWaConfig && (
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-slate-100">Status da Conexão WhatsApp</h2>
+            <button
+              type="button"
+              onClick={() => refetchWaStatus()}
+              disabled={waStatusFetching}
+              className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
+              title="Atualizar status"
+            >
+              <RefreshCw size={15} className={waStatusFetching ? 'animate-spin' : ''} />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {waConnected ? (
+              <>
+                <Wifi size={20} className="text-green-400 shrink-0" />
+                <span className="text-sm text-green-400 font-medium">Conectado</span>
+              </>
+            ) : (
+              <>
+                <WifiOff size={20} className="text-slate-500 shrink-0" />
+                <span className="text-sm text-slate-400">Não conectado</span>
+              </>
+            )}
+          </div>
+
+          {!waConnected && (
+            <div className="space-y-3">
+              <p className="text-xs text-slate-500">
+                Escaneie o QR Code com o WhatsApp do número que enviará as notificações.
+              </p>
+              <button
+                type="button"
+                onClick={generateQr}
+                disabled={loadingQr}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+              >
+                <QrCode size={16} />
+                {loadingQr ? 'Gerando...' : 'Gerar QR Code'}
+              </button>
+              {qrImage && (
+                <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl w-fit">
+                  <img src={qrImage} alt="QR Code WhatsApp" className="w-48 h-48 object-contain" />
+                  <p className="text-xs text-slate-700">Escaneie com o WhatsApp</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* WhatsApp Check-in / Geofencing */}
       <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 space-y-4">
