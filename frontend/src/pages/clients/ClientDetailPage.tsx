@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft, Pencil, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../../lib/api'
 import { CheckinSourceBadge } from '../../components/CheckinSourceBadge'
@@ -34,6 +34,7 @@ export function ClientDetailPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [tab, setTab] = useState<'cards' | 'history'>('cards')
+  const [historyPage, setHistoryPage] = useState(1)
   const [showEdit, setShowEdit] = useState(false)
   const [editForm, setEditForm] = useState<EditForm>({ name: '', phone: '', phoneNumber: '', email: '', document: '' })
 
@@ -47,9 +48,10 @@ export function ClientDetailPage() {
     queryFn: async () => (await api.get('/cards', { params: { clientId: id } })).data?.data ?? [],
   })
 
-  const { data: logs } = useQuery<{ data: AccessLog[] }>({
-    queryKey: ['access-logs', 'client', id],
-    queryFn: async () => (await api.get('/access-logs', { params: { clientId: id, limit: 20 } })).data,
+  const { data: logs } = useQuery<{ data: AccessLog[]; meta: { total: number; totalPages: number } }>({
+    queryKey: ['access-logs', 'client', id, historyPage],
+    queryFn: async () =>
+      (await api.get('/access-logs', { params: { clientId: id, limit: 20, page: historyPage } })).data,
     enabled: tab === 'history',
   })
 
@@ -144,7 +146,7 @@ export function ClientDetailPage() {
         {(['cards', 'history'] as const).map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => { setTab(t); setHistoryPage(1) }}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === t
                 ? 'border-indigo-500 text-indigo-400'
@@ -224,6 +226,29 @@ export function ClientDetailPage() {
                 ))}
               </tbody>
             </table>
+          )}
+          {(logs?.meta?.totalPages ?? 1) > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800">
+              <span className="text-sm text-slate-400">
+                Página {historyPage} de {logs?.meta?.totalPages}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                  disabled={historyPage === 1}
+                  className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  onClick={() => setHistoryPage((p) => Math.min(logs?.meta?.totalPages ?? 1, p + 1))}
+                  disabled={historyPage === (logs?.meta?.totalPages ?? 1)}
+                  className="p-1.5 text-slate-400 hover:text-slate-100 disabled:opacity-30"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}
