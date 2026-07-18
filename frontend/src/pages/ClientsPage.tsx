@@ -1,10 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
 import type { Client, PaginatedResponse } from '../types'
+
+function useDebounce<T>(value: T, delay = 400): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return debounced
+}
 
 interface NewClientForm {
   name: string
@@ -25,14 +34,16 @@ export function ClientsPage() {
   const qc = useQueryClient()
   const navigate = useNavigate()
 
+  const debouncedSearch = useDebounce(search)
+
   const { data, isLoading } = useQuery<PaginatedResponse<Client>>({
-    queryKey: ['clients', page, search, isActiveFilter],
+    queryKey: ['clients', page, debouncedSearch, isActiveFilter],
     queryFn: async () =>
       (await api.get('/clients', {
         params: {
           page,
           limit: 20,
-          search: search || undefined,
+          search: debouncedSearch || undefined,
           isActive: isActiveFilter === '' ? undefined : isActiveFilter,
         },
       })).data,

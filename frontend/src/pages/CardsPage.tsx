@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -21,6 +21,15 @@ interface EditCardForm {
 
 const EMPTY: NewCardForm = { uid: '', label: '', status: 'ACTIVE', clientId: '' }
 
+function useDebounce<T>(value: T, delay = 400): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return debounced
+}
+
 const STATUS_STYLES = {
   ACTIVE: 'bg-green-500/20 text-green-400',
   BLOCKED: 'bg-red-500/20 text-red-400',
@@ -38,10 +47,12 @@ export function CardsPage() {
   const [editClientSearch, setEditClientSearch] = useState('')
   const qc = useQueryClient()
 
+  const debouncedSearch = useDebounce(search)
+
   const { data, isLoading } = useQuery<PaginatedResponse<Card>>({
-    queryKey: ['cards', page, search],
+    queryKey: ['cards', page, debouncedSearch],
     queryFn: async () =>
-      (await api.get('/cards', { params: { page, limit: 20, search: search || undefined } })).data,
+      (await api.get('/cards', { params: { page, limit: 20, search: debouncedSearch || undefined } })).data,
   })
 
   const { data: clients } = useQuery<PaginatedResponse<Client>>({
