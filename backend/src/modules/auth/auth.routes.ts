@@ -6,6 +6,12 @@ import { z } from 'zod'
 import { Prisma } from '@prisma/client'
 import prisma from '../../lib/prisma'
 import { sendMail } from '../../config/email'
+import { rateLimit } from '../../middlewares/rate-limit.middleware'
+
+// 10 login attempts per minute per IP
+const loginLimiter = rateLimit({ windowMs: 60_000, max: 10, message: 'Muitas tentativas. Tente novamente em 1 minuto.' })
+// 5 password reset emails per hour per IP
+const forgotPwLimiter = rateLimit({ windowMs: 3_600_000, max: 5, message: 'Muitas solicitações de recuperação. Tente novamente em 1 hora.' })
 
 const router = Router()
 
@@ -18,7 +24,7 @@ function signToken(user: { id: string; tenantId: string | null; role: string; na
 }
 
 // POST /login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', loginLimiter, async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body
     if (!email || !password) {
@@ -88,7 +94,7 @@ router.get('/check-slug', async (req: Request, res: Response) => {
 })
 
 // POST /forgot-password
-router.post('/forgot-password', async (req: Request, res: Response) => {
+router.post('/forgot-password', forgotPwLimiter, async (req: Request, res: Response) => {
   try {
     const { email } = req.body
     const user = await prisma.user.findUnique({ where: { email } })

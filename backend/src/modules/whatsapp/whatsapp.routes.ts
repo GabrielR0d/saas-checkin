@@ -3,6 +3,10 @@ import axios from 'axios'
 import prisma from '../../lib/prisma'
 import { authenticate } from '../../middlewares/auth.middleware'
 import { emitToTenant } from '../../config/socket'
+import { rateLimit } from '../../middlewares/rate-limit.middleware'
+
+// 60 webhook calls per minute per IP (Evolution API sends bursts)
+const webhookLimiter = rateLimit({ windowMs: 60_000, max: 60, message: 'Rate limit exceeded' })
 
 const router = Router()
 
@@ -41,7 +45,7 @@ const MIN_CHECKIN_INTERVAL_MS = 90 * 1000
 
 // ─── Webhook público (sem autenticação) ─────────────────────────────────────
 
-router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
+router.post('/webhook', webhookLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { data } = req.body
     if (!data?.message?.locationMessage) {
