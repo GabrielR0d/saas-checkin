@@ -32,6 +32,19 @@ const PLANS = [
 
 router.get('/plans', (_req, res) => res.json(PLANS))
 
+router.get('/me', authenticate, async (req: Request, res: Response) => {
+  try {
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: req.user.tenantId },
+      select: { plan: true },
+    })
+    return res.json({ plan: tenant?.plan ?? 'FREE' })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 router.post('/checkout', authenticate, async (req: Request, res: Response) => {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
@@ -45,7 +58,7 @@ router.post('/checkout', authenticate, async (req: Request, res: Response) => {
       line_items: [{ price: planData.priceId, quantity: 1 }],
       success_url: `${origin}/plans?success=true`,
       cancel_url: `${origin}/plans`,
-      metadata: { tenantId: req.user.tenantId, plan },
+      metadata: { tenantId: req.user.tenantId, plan: planId ?? plan },
     })
     return res.json({ url: session.url })
   } catch (err: any) {

@@ -2,7 +2,6 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { Check, Zap } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
-import { useAuth } from '../store/auth'
 
 interface Plan {
   id: string
@@ -14,11 +13,14 @@ interface Plan {
 }
 
 export function BillingPage() {
-  const { user } = useAuth()
-
   const { data: plans, isLoading } = useQuery<Plan[]>({
     queryKey: ['billing/plans'],
     queryFn: async () => (await api.get('/billing/plans')).data,
+  })
+
+  const { data: myPlan } = useQuery<{ plan: string }>({
+    queryKey: ['billing/me'],
+    queryFn: async () => (await api.get('/billing/me')).data,
   })
 
   const checkout = useMutation({
@@ -36,40 +38,37 @@ export function BillingPage() {
 
   const FALLBACK_PLANS: Plan[] = [
     {
-      id: 'starter',
+      id: 'FREE',
       name: 'Starter',
       price: 0,
       interval: 'mês',
       features: ['Até 50 participantes', '2 dispositivos', 'Histórico 30 dias', 'Suporte email'],
-      isCurrent: user?.role === 'FREE',
     },
     {
-      id: 'pro',
-      name: 'Pro',
-      price: 97,
+      id: 'BASIC',
+      name: 'Basic',
+      price: 49,
       interval: 'mês',
       features: ['Até 500 participantes', '10 dispositivos', 'Histórico ilimitado', 'Notificações WhatsApp', 'Suporte prioritário'],
-      isCurrent: user?.role === 'PRO',
     },
     {
-      id: 'business',
-      name: 'Business',
-      price: 297,
+      id: 'PRO',
+      name: 'Pro',
+      price: 149,
       interval: 'mês',
-      features: ['Participantes ilimitados', 'Dispositivos ilimitados', 'Histórico ilimitado', 'WhatsApp + SMS', 'API própria', 'SLA 99.9%'],
-      isCurrent: user?.role === 'BUSINESS',
+      features: ['Participantes ilimitados', 'Dispositivos ilimitados', 'Histórico ilimitado', 'WhatsApp + SMS', 'App mobile'],
     },
     {
-      id: 'enterprise',
+      id: 'ENTERPRISE',
       name: 'Enterprise',
       price: -1,
       interval: 'mês',
-      features: ['Tudo do Business', 'Multi-tenant', 'SSO / SAML', 'Onboarding dedicado', 'Contrato personalizado'],
-      isCurrent: user?.role === 'ENTERPRISE',
+      features: ['Tudo do Pro', 'SLA garantido', 'Onboarding dedicado', 'Contrato personalizado'],
     },
   ]
 
-  const displayPlans = plans ?? (isLoading ? [] : FALLBACK_PLANS)
+  const basePlans = plans ?? (isLoading ? [] : FALLBACK_PLANS)
+  const displayPlans = basePlans.map((p) => ({ ...p, isCurrent: p.id === myPlan?.plan }))
 
   return (
     <div className="p-6 space-y-6">

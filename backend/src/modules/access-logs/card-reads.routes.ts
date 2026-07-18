@@ -15,16 +15,19 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
     const device = req.device!
     const cardUid = (uid as string).toUpperCase()
 
-    // 1. Determine direction from last log
-    const lastLog = await prisma.accessLog.findFirst({
-      where: { cardUid, tenantId },
-      orderBy: { occurredAt: 'desc' },
-    })
-
-    // 2. Find card
+    // 2. Find card first (needed for clientId-based direction lookup)
     const card = await prisma.card.findFirst({
       where: { uid: cardUid, tenantId },
       include: { client: { select: { id: true, name: true, phone: true, phoneNumber: true } } },
+    })
+
+    // 1. Determine direction from last log — use clientId when known so WhatsApp
+    //    check-ins count towards the RFID direction and vice-versa.
+    const lastLog = await prisma.accessLog.findFirst({
+      where: card?.clientId
+        ? { clientId: card.clientId, tenantId }
+        : { cardUid, tenantId },
+      orderBy: { occurredAt: 'desc' },
     })
 
     // 3. Determine event type and direction
@@ -79,7 +82,7 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
       // Use whatsapp-formatted number (phoneNumber) if set; fall back to raw phone
       const waNumber = card.client.phoneNumber || card.client.phone?.replace(/\D/g, '')
 
-      if (shouldNotify && settings?.whatsappApiUrl && settings?.whatsappInstanceId && settings?.whatsappToken && waNumber) {
+      if (shouldNotify && settings?.whatsappEnabled && settings?.whatsappApiUrl && settings?.whatsappInstanceId && settings?.whatsappToken && waNumber) {
         const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
         const msg = eventType === 'ENTRY'
           ? `✅ Entrada às ${time}. Bem-vindo(a), *${card.client.name}*!`
