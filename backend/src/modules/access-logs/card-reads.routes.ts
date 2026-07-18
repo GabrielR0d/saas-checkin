@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express'
-import axios from 'axios'
 import prisma from '../../lib/prisma'
 import { deviceAuth } from '../../middlewares/device-auth.middleware'
 import { emitToTenant } from '../../config/socket'
+import { sendWaMsg } from '../../lib/whatsapp'
 
 const router = Router()
 
@@ -82,19 +82,15 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
       // Use whatsapp-formatted number (phoneNumber) if set; fall back to raw phone
       const waNumber = card.client.phoneNumber || card.client.phone?.replace(/\D/g, '')
 
-      if (shouldNotify && settings?.whatsappEnabled && settings?.whatsappApiUrl && settings?.whatsappInstanceId && settings?.whatsappToken && waNumber) {
+      if (shouldNotify && settings?.whatsappEnabled && settings?.whatsappApiUrl && waNumber) {
         const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
         const msg = eventType === 'ENTRY'
           ? `✅ Entrada às ${time}. Bem-vindo(a), *${card.client.name}*!`
           : `👋 Saída às ${time}. Até logo, *${card.client.name}*!`
 
-        axios
-          .post(
-            `${settings.whatsappApiUrl}/message/sendText/${settings.whatsappInstanceId}`,
-            { number: waNumber, text: msg },
-            { headers: { apikey: settings.whatsappToken } }
-          )
-          .catch((err) => console.error('[WhatsApp] Send failed:', err.message))
+        sendWaMsg(waNumber, msg, settings).catch((err) =>
+          console.error('[WhatsApp] Send failed:', err.message)
+        )
       }
     }
 

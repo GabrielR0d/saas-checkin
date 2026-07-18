@@ -4,6 +4,7 @@ import prisma from '../../lib/prisma'
 import { authenticate } from '../../middlewares/auth.middleware'
 import { emitToTenant } from '../../config/socket'
 import { rateLimit } from '../../middlewares/rate-limit.middleware'
+import { sendWaMsg } from '../../lib/whatsapp'
 
 // 60 webhook calls per minute per IP (Evolution API sends bursts)
 const webhookLimiter = rateLimit({ windowMs: 60_000, max: 60, message: 'Rate limit exceeded' })
@@ -20,21 +21,6 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   const Δλ = ((lon2 - lon1) * Math.PI) / 180
   const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
-async function sendWaMsg(phone: string, text: string, settings: any): Promise<boolean> {
-  if (!settings?.whatsappApiUrl) return false
-  try {
-    await axios.post(
-      `${settings.whatsappApiUrl}/message/sendText/${settings.whatsappInstanceId}`,
-      { number: phone, text },
-      { headers: { apikey: settings.whatsappToken ?? process.env.EVOLUTION_API_KEY ?? '' } }
-    )
-    return true
-  } catch (e) {
-    console.error('WA send error:', e)
-    return false
-  }
 }
 
 // Janela mínima entre check-ins do mesmo cliente: evita duplicidade por
