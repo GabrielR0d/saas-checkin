@@ -57,6 +57,7 @@ export interface ReportSummary {
   totalClients: number
   totalCards: number
   totalDevices: number
+  onlineDevices: number
   todayEntries: number
   todayExits: number
   unknownCards: number

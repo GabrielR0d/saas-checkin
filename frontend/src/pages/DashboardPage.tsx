@@ -78,8 +78,8 @@ export function DashboardPage() {
       bg: 'bg-green-500/10',
     },
     {
-      label: 'Dispositivos ativos',
-      value: summary?.totalDevices ?? '—',
+      label: 'Dispositivos online',
+      value: summary ? `${summary.onlineDevices}/${summary.totalDevices}` : '—',
       icon: Activity,
       color: 'text-indigo-400',
       bg: 'bg-indigo-500/10',

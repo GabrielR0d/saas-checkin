@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Search, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
@@ -8,6 +8,12 @@ import type { Card, Client, PaginatedResponse } from '../types'
 
 interface NewCardForm {
   uid: string
+  label: string
+  status: 'ACTIVE' | 'BLOCKED' | 'LOST'
+  clientId: string
+}
+
+interface EditCardForm {
   label: string
   status: 'ACTIVE' | 'BLOCKED' | 'LOST'
   clientId: string
@@ -27,6 +33,9 @@ export function CardsPage() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState<NewCardForm>(EMPTY)
   const [clientSearch, setClientSearch] = useState('')
+  const [editCard, setEditCard] = useState<Card | null>(null)
+  const [editForm, setEditForm] = useState<EditCardForm>({ label: '', status: 'ACTIVE', clientId: '' })
+  const [editClientSearch, setEditClientSearch] = useState('')
   const qc = useQueryClient()
 
   const { data, isLoading } = useQuery<PaginatedResponse<Card>>({
@@ -39,7 +48,7 @@ export function CardsPage() {
     queryKey: ['clients-select', clientSearch],
     queryFn: async () =>
       (await api.get('/clients', { params: { limit: 20, search: clientSearch || undefined } })).data,
-    enabled: showModal,
+    enabled: showModal || !!editCard,
   })
 
   const create = useMutation({
@@ -53,6 +62,32 @@ export function CardsPage() {
     },
     onError: () => toast.error('Erro ao criar cartão'),
   })
+
+  const updateCard = useMutation({
+    mutationFn: (body: EditCardForm) =>
+      api.put(`/cards/${editCard?.id}`, { ...body, clientId: body.clientId || '' }),
+    onSuccess: () => {
+      toast.success('Cartão atualizado!')
+      qc.invalidateQueries({ queryKey: ['cards'] })
+      setEditCard(null)
+    },
+    onError: () => toast.error('Erro ao atualizar cartão'),
+  })
+
+  const deleteCard = useMutation({
+    mutationFn: (id: string) => api.delete(`/cards/${id}`),
+    onSuccess: () => {
+      toast.success('Cartão removido!')
+      qc.invalidateQueries({ queryKey: ['cards'] })
+    },
+    onError: () => toast.error('Erro ao remover cartão'),
+  })
+
+  function openEdit(card: Card) {
+    setEditCard(card)
+    setEditForm({ label: card.label ?? '', status: card.status, clientId: card.clientId ?? '' })
+    setEditClientSearch(card.client?.name ?? '')
+  }
 
   const totalPages = data?.meta?.totalPages ?? 1
 
@@ -91,13 +126,14 @@ export function CardsPage() {
               <th className="px-4 py-3 text-slate-400 font-medium">Label</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Status</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Participante</th>
+              <th className="px-4 py-3 text-slate-400 font-medium w-20"></th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={4} className="text-center py-10 text-slate-500">Carregando...</td></tr>
+              <tr><td colSpan={5} className="text-center py-10 text-slate-500">Carregando...</td></tr>
             ) : data?.data.length === 0 ? (
-              <tr><td colSpan={4} className="text-center py-10 text-slate-500">Nenhum cartão encontrado</td></tr>
+              <tr><td colSpan={5} className="text-center py-10 text-slate-500">Nenhum cartão encontrado</td></tr>
             ) : (
               data?.data.map((card) => (
                 <tr key={card.id} className="border-b border-slate-800 last:border-0 hover:bg-slate-800/50 transition-colors">
@@ -118,6 +154,28 @@ export function CardsPage() {
                         {card.client.name}
                       </Link>
                     ) : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1 justify-end">
+                      <button
+                        onClick={() => openEdit(card)}
+                        className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-700 rounded transition-colors"
+                        title="Editar"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Remover cartão ${card.uid}? Esta ação não pode ser desfeita.`)) {
+                            deleteCard.mutate(card.id)
+                          }
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                        title="Remover"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -201,6 +259,66 @@ export function CardsPage() {
                 </button>
                 <button type="submit" disabled={create.isPending} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
                   {create.isPending ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editCard && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold text-slate-100 mb-1">Editar Cartão</h2>
+            <p className="text-xs font-mono text-slate-500 mb-4">{editCard.uid}</p>
+            <form onSubmit={(e) => { e.preventDefault(); updateCard.mutate(editForm) }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Label</label>
+                <input
+                  value={editForm.label}
+                  onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
+                  placeholder="Ex: Cartão Principal"
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Status</label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value as EditCardForm['status'] })}
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="BLOCKED">BLOCKED</option>
+                  <option value="LOST">LOST</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Participante</label>
+                <input
+                  value={editClientSearch}
+                  onChange={(e) => setEditClientSearch(e.target.value)}
+                  placeholder="Buscar participante..."
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500 mb-2"
+                />
+                <select
+                  value={editForm.clientId}
+                  onChange={(e) => setEditForm({ ...editForm, clientId: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Sem participante</option>
+                  {clients?.data.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setEditCard(null)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={updateCard.isPending} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                  {updateCard.isPending ? 'Salvando...' : 'Salvar'}
                 </button>
               </div>
             </form>

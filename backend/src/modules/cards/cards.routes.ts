@@ -79,4 +79,17 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const deleted = await prisma.card.deleteMany({
+      where: { id: req.params.id, tenantId: req.user.tenantId },
+    })
+    if (deleted.count === 0) return res.status(404).json({ error: 'Not found' })
+    return res.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 export default router
