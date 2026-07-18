@@ -176,8 +176,9 @@ router.get('/status', async (req: Request, res: Response) => {
   try {
     const settings = await getSettings(req.user.tenantId)
     if (!settings?.whatsappApiUrl) return res.json({ connected: false })
+    const apikey = settings.whatsappToken ?? process.env.EVOLUTION_API_KEY ?? ''
     const { data } = await axios.get(`${settings.whatsappApiUrl}/instance/fetchInstances`, {
-      headers: { apikey: process.env.EVOLUTION_API_KEY },
+      headers: { apikey },
     })
     return res.json(data)
   } catch (err: any) {
@@ -191,10 +192,11 @@ router.post('/connect', async (req: Request, res: Response) => {
     if (!settings?.whatsappApiUrl || !settings.whatsappInstanceId) {
       return res.status(400).json({ error: 'WhatsApp not configured' })
     }
+    const apikey = settings.whatsappToken ?? process.env.EVOLUTION_API_KEY ?? ''
     const { data } = await axios.post(
       `${settings.whatsappApiUrl}/instance/create`,
       { instanceName: settings.whatsappInstanceId },
-      { headers: { apikey: process.env.EVOLUTION_API_KEY } }
+      { headers: { apikey } }
     )
     return res.json(data)
   } catch (err: any) {
@@ -208,9 +210,10 @@ router.post('/qrcode', async (req: Request, res: Response) => {
     if (!settings?.whatsappApiUrl || !settings.whatsappInstanceId) {
       return res.status(400).json({ error: 'WhatsApp not configured' })
     }
+    const apikey = settings.whatsappToken ?? process.env.EVOLUTION_API_KEY ?? ''
     const { data } = await axios.get(
       `${settings.whatsappApiUrl}/instance/connect/${settings.whatsappInstanceId}`,
-      { headers: { apikey: process.env.EVOLUTION_API_KEY } }
+      { headers: { apikey } }
     )
     return res.json(data)
   } catch (err: any) {
