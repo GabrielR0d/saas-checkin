@@ -16,9 +16,24 @@ const SCAN_CODE_MAP: Record<number, string> = {
 
 const ENTER_CODES = new Set([0x28, 0x58])
 
+// Maximum time (ms) between keystrokes before the buffer is considered stale.
+// Protects against partial reads leaving garbage that prefixes the next card.
+const BUFFER_TIMEOUT_MS = 1000
+
 export class HidReader extends EventEmitter {
   private device: HID.HID
   private buffer = ''
+  private bufferTimer: ReturnType<typeof setTimeout> | null = null
+
+  private resetBufferTimer() {
+    if (this.bufferTimer) clearTimeout(this.bufferTimer)
+    this.bufferTimer = setTimeout(() => {
+      if (this.buffer) {
+        console.warn(`[HID] Buffer timeout — discarding stale data: "${this.buffer}"`)
+        this.buffer = ''
+      }
+    }, BUFFER_TIMEOUT_MS)
+  }
 
   constructor() {
     super()
@@ -31,6 +46,7 @@ export class HidReader extends EventEmitter {
       if (!keycode) return
 
       if (ENTER_CODES.has(keycode)) {
+        if (this.bufferTimer) { clearTimeout(this.bufferTimer); this.bufferTimer = null }
         if (this.buffer.length > 0) {
           console.log(`[HID] Card read: ${this.buffer}`)
           this.emit('card', this.buffer)
@@ -38,7 +54,10 @@ export class HidReader extends EventEmitter {
         }
       } else {
         const char = SCAN_CODE_MAP[keycode]
-        if (char) this.buffer += char
+        if (char) {
+          this.buffer += char
+          this.resetBufferTimer()
+        }
       }
     })
 
@@ -49,6 +68,7 @@ export class HidReader extends EventEmitter {
   }
 
   close(): void {
+    if (this.bufferTimer) clearTimeout(this.bufferTimer)
     this.device.close()
   }
 }

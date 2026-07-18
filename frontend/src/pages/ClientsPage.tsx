@@ -18,6 +18,7 @@ const EMPTY: NewClientForm = { name: '', phone: '', phoneNumber: '', email: '', 
 
 export function ClientsPage() {
   const [search, setSearch] = useState('')
+  const [isActiveFilter, setIsActiveFilter] = useState('')
   const [page, setPage] = useState(1)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState<NewClientForm>(EMPTY)
@@ -25,9 +26,16 @@ export function ClientsPage() {
   const navigate = useNavigate()
 
   const { data, isLoading } = useQuery<PaginatedResponse<Client>>({
-    queryKey: ['clients', page, search],
+    queryKey: ['clients', page, search, isActiveFilter],
     queryFn: async () =>
-      (await api.get('/clients', { params: { page, limit: 20, search: search || undefined } })).data,
+      (await api.get('/clients', {
+        params: {
+          page,
+          limit: 20,
+          search: search || undefined,
+          isActive: isActiveFilter === '' ? undefined : isActiveFilter,
+        },
+      })).data,
   })
 
   const create = useMutation({
@@ -59,16 +67,27 @@ export function ClientsPage() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          placeholder="Buscar por nome, email ou telefone..."
-          className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
-        />
+      {/* Search + filter */}
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+            placeholder="Buscar por nome, email ou telefone..."
+            className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+          />
+        </div>
+        <select
+          value={isActiveFilter}
+          onChange={(e) => { setIsActiveFilter(e.target.value); setPage(1) }}
+          className="bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">Todos</option>
+          <option value="true">Ativos</option>
+          <option value="false">Inativos</option>
+        </select>
       </div>
 
       {/* Table */}

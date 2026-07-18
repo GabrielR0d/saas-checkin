@@ -16,6 +16,9 @@ router.get('/', async (req: Request, res: Response) => {
     const skip = (page - 1) * limit
 
     const where: any = { tenantId }
+    if (req.query.isActive !== undefined) {
+      where.isActive = req.query.isActive === 'true'
+    }
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
