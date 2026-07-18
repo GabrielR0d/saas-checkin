@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Pencil } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../../lib/api'
 import { CheckinSourceBadge } from '../../components/CheckinSourceBadge'
@@ -21,11 +21,21 @@ const EVENT_LABELS = {
   BLOCKED_CARD: 'BLOQUEADO',
 }
 
+interface EditForm {
+  name: string
+  phone: string
+  phoneNumber: string
+  email: string
+  document: string
+}
+
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [tab, setTab] = useState<'cards' | 'history'>('cards')
+  const [showEdit, setShowEdit] = useState(false)
+  const [editForm, setEditForm] = useState<EditForm>({ name: '', phone: '', phoneNumber: '', email: '', document: '' })
 
   const { data: client, isLoading } = useQuery<Client>({
     queryKey: ['clients', id],
@@ -52,6 +62,32 @@ export function ClientDetailPage() {
     onError: () => toast.error('Erro ao atualizar'),
   })
 
+  const updateClient = useMutation({
+    mutationFn: (body: EditForm) => api.put(`/clients/${id}`, body),
+    onSuccess: () => {
+      toast.success('Participante atualizado!')
+      qc.invalidateQueries({ queryKey: ['clients', id] })
+      qc.invalidateQueries({ queryKey: ['clients'] })
+      setShowEdit(false)
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.error ?? 'Erro ao atualizar'
+      toast.error(msg)
+    },
+  })
+
+  function openEdit() {
+    if (!client) return
+    setEditForm({
+      name: client.name,
+      phone: client.phone,
+      phoneNumber: client.phoneNumber ?? '',
+      email: client.email ?? '',
+      document: client.document ?? '',
+    })
+    setShowEdit(true)
+  }
+
   if (isLoading) {
     return <div className="p-6 text-slate-400">Carregando...</div>
   }
@@ -71,19 +107,36 @@ export function ClientDetailPage() {
         </button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-100">{client.name}</h1>
-          <p className="text-slate-400 text-sm mt-0.5">{client.phone} · {client.email || 'Sem email'}</p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+            <span className="text-slate-400 text-sm">{client.phone}</span>
+            {client.phoneNumber && (
+              <span className="text-green-400 text-sm">📱 {client.phoneNumber}</span>
+            )}
+            {client.email && (
+              <span className="text-slate-400 text-sm">{client.email}</span>
+            )}
+          </div>
         </div>
-        <button
-          onClick={() => toggleActive.mutate()}
-          disabled={toggleActive.isPending}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            client.isActive
-              ? 'bg-green-500/20 text-green-400 hover:bg-red-500/20 hover:text-red-400'
-              : 'bg-slate-700 text-slate-400 hover:bg-green-500/20 hover:text-green-400'
-          }`}
-        >
-          {client.isActive ? 'Ativo' : 'Inativo'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openEdit}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            <Pencil size={14} />
+            Editar
+          </button>
+          <button
+            onClick={() => toggleActive.mutate()}
+            disabled={toggleActive.isPending}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              client.isActive
+                ? 'bg-green-500/20 text-green-400 hover:bg-red-500/20 hover:text-red-400'
+                : 'bg-slate-700 text-slate-400 hover:bg-green-500/20 hover:text-green-400'
+            }`}
+          >
+            {client.isActive ? 'Ativo' : 'Inativo'}
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -164,7 +217,7 @@ export function ClientDetailPage() {
                         {EVENT_LABELS[log.eventType]}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-mono text-slate-300">{log.cardUid}</td>
+                    <td className="px-4 py-3 font-mono text-slate-300">{log.cardUid ?? '—'}</td>
                     <td className="px-4 py-3 text-slate-300">{log.device?.name || '—'}</td>
                     <td className="px-4 py-3"><CheckinSourceBadge source={log.checkinSource} /></td>
                   </tr>
@@ -172,6 +225,86 @@ export function ClientDetailPage() {
               </tbody>
             </table>
           )}
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEdit && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold text-slate-100 mb-4">Editar Participante</h2>
+            <form
+              onSubmit={(e) => { e.preventDefault(); updateClient.mutate(editForm) }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Nome *</label>
+                <input
+                  required
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Telefone *</label>
+                <input
+                  required
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  placeholder="(11) 99999-9999"
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  Telefone WhatsApp
+                  <span className="ml-1.5 text-xs font-normal text-slate-500">(formato: 5511999999999)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={editForm.phoneNumber}
+                  onChange={(e) => setEditForm({ ...editForm, phoneNumber: e.target.value })}
+                  placeholder="5511999999999"
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Documento</label>
+                <input
+                  value={editForm.document}
+                  onChange={(e) => setEditForm({ ...editForm, document: e.target.value })}
+                  placeholder="CPF / RG"
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEdit(false)}
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateClient.isPending}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                >
+                  {updateClient.isPending ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
