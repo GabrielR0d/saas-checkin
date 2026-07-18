@@ -64,9 +64,9 @@ export interface ReportSummary {
 }
 
 export interface Settings {
-  notifyEntry: boolean
-  notifyExit: boolean
-  notifyUnknown: boolean
+  notifyOnEntry: boolean
+  notifyOnExit: boolean
+  notifyOnUnknown: boolean
   whatsappProvider: 'EVOLUTION' | 'ZAPI'
   whatsappInstanceId?: string
   whatsappToken?: string
@@ -77,9 +77,14 @@ export interface Settings {
   locationRadius: number
 }
 
-export interface PaginatedResponse<T> {
-  data: T[]
-  total: number
+export interface PaginatedMeta {
   page: number
   limit: number
+  total: number
+  totalPages: number
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  meta: PaginatedMeta
 }

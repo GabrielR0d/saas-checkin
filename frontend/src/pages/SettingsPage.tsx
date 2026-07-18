@@ -20,9 +20,9 @@ function useDebounce<T>(value: T, delay = 500): T {
 export function SettingsPage() {
   const qc = useQueryClient()
   const [form, setForm] = useState<Settings>({
-    notifyEntry: true,
-    notifyExit: false,
-    notifyUnknown: true,
+    notifyOnEntry: true,
+    notifyOnExit: false,
+    notifyOnUnknown: true,
     whatsappProvider: 'EVOLUTION',
     whatsappInstanceId: '',
     whatsappToken: '',
@@ -47,9 +47,9 @@ export function SettingsPage() {
   useEffect(() => {
     if (settings) {
       setForm({
-        notifyEntry: settings.notifyEntry ?? true,
-        notifyExit: settings.notifyExit ?? false,
-        notifyUnknown: settings.notifyUnknown ?? true,
+        notifyOnEntry: settings.notifyOnEntry ?? true,
+        notifyOnExit: settings.notifyOnExit ?? false,
+        notifyOnUnknown: settings.notifyOnUnknown ?? true,
         whatsappProvider: settings.whatsappProvider ?? 'EVOLUTION',
         whatsappInstanceId: settings.whatsappInstanceId ?? '',
         whatsappToken: settings.whatsappToken ?? '',
@@ -143,9 +143,9 @@ export function SettingsPage() {
       <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 space-y-4">
         <h2 className="text-base font-semibold text-slate-100">Notificações</h2>
         {[
-          { key: 'notifyEntry' as const, label: 'Notificar na entrada' },
-          { key: 'notifyExit' as const, label: 'Notificar na saída' },
-          { key: 'notifyUnknown' as const, label: 'Notificar cartão desconhecido' },
+          { key: 'notifyOnEntry' as const, label: 'Notificar na entrada' },
+          { key: 'notifyOnExit' as const, label: 'Notificar na saída' },
+          { key: 'notifyOnUnknown' as const, label: 'Notificar cartão desconhecido' },
         ].map(({ key, label }) => (
           <label key={key} className="flex items-center justify-between cursor-pointer">
             <span className="text-sm text-slate-300">{label}</span>

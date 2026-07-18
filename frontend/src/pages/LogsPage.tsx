@@ -23,11 +23,12 @@ export function LogsPage() {
   const [page, setPage] = useState(1)
   const [eventType, setEventType] = useState('')
   const [deviceId, setDeviceId] = useState('')
+  const [checkinSource, setCheckinSource] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
 
   const { data, isLoading } = useQuery<PaginatedResponse<AccessLog>>({
-    queryKey: ['access-logs', page, eventType, deviceId, dateFrom, dateTo],
+    queryKey: ['access-logs', page, eventType, deviceId, checkinSource, dateFrom, dateTo],
     queryFn: async () =>
       (
         await api.get('/access-logs', {
@@ -36,6 +37,7 @@ export function LogsPage() {
             limit: 20,
             eventType: eventType || undefined,
             deviceId: deviceId || undefined,
+            checkinSource: checkinSource || undefined,
             dateFrom: dateFrom || undefined,
             dateTo: dateTo || undefined,
           },
@@ -51,7 +53,7 @@ export function LogsPage() {
     },
   })
 
-  const totalPages = data ? Math.ceil(data.total / 20) : 1
+  const totalPages = data?.meta?.totalPages ?? 1
 
   function exportCsv() {
     const params = new URLSearchParams({
@@ -68,7 +70,7 @@ export function LogsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Histórico de Acessos</h1>
-          <p className="text-slate-400 text-sm mt-1">{data?.total ?? 0} registros</p>
+          <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} registros</p>
         </div>
         <button
           onClick={exportCsv}
@@ -80,7 +82,7 @@ export function LogsPage() {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <select
           value={eventType}
           onChange={(e) => { setEventType(e.target.value); setPage(1) }}
@@ -91,6 +93,16 @@ export function LogsPage() {
           <option value="EXIT">Saída</option>
           <option value="UNKNOWN_CARD">Desconhecido</option>
           <option value="BLOCKED_CARD">Bloqueado</option>
+        </select>
+
+        <select
+          value={checkinSource}
+          onChange={(e) => { setCheckinSource(e.target.value); setPage(1) }}
+          className="bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">Todas as origens</option>
+          <option value="rfid">RFID</option>
+          <option value="whatsapp">WhatsApp</option>
         </select>
 
         <select
@@ -147,7 +159,9 @@ export function LogsPage() {
                       {EVENT_LABELS[log.eventType]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-slate-300">{log.cardUid}</td>
+                  <td className="px-4 py-3 font-mono text-slate-300">
+                    {log.cardUid ?? <span className="not-italic text-slate-500">—</span>}
+                  </td>
                   <td className="px-4 py-3 text-slate-300">{log.client?.name || '—'}</td>
                   <td className="px-4 py-3 text-slate-300">{log.device?.name || '—'}</td>
                   <td className="px-4 py-3"><CheckinSourceBadge source={log.checkinSource} /></td>

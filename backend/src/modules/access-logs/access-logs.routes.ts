@@ -16,6 +16,7 @@ router.get('/', async (req: Request, res: Response) => {
     if (req.query.eventType) where.eventType = req.query.eventType
     if (req.query.clientId) where.clientId = req.query.clientId
     if (req.query.deviceId) where.deviceId = req.query.deviceId
+    if (req.query.checkinSource) where.checkinSource = req.query.checkinSource
     if (req.query.dateFrom || req.query.dateTo) {
       where.occurredAt = {}
       if (req.query.dateFrom) where.occurredAt.gte = new Date(req.query.dateFrom as string)
