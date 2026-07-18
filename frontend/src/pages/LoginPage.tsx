@@ -19,7 +19,8 @@ export function LoginPage() {
       login(data.accessToken, data.user)
       navigate('/')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      const msg = (err as { response?: { data?: { error?: string; message?: string } } })?.response?.data?.error
+        ?? (err as { response?: { data?: { error?: string; message?: string } } })?.response?.data?.message
       toast.error(msg || 'Credenciais inválidas')
     } finally {
       setLoading(false)

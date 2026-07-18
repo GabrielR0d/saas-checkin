@@ -77,6 +77,11 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
     }
 
     const s = client.tenant?.settings
+    if (!s?.whatsappEnabled) {
+      res.status(200).json({ ok: true })
+      return
+    }
+
     if (s?.locationLat == null || s?.locationLng == null) {
       await sendWaMsg(rawPhone, '❌ Localização do estabelecimento não configurada.', s)
       res.status(200).json({ ok: true })

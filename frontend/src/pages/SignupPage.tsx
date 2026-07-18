@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
+import { useAuth } from '../store/auth'
 
 function toSlug(value: string) {
   return value
@@ -13,6 +14,7 @@ function toSlug(value: string) {
 }
 
 export function SignupPage() {
+  const { login } = useAuth()
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -37,11 +39,13 @@ export function SignupPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.post('/auth/signup', form)
-      toast.success('Conta criada com sucesso! Faça login.')
-      navigate('/login')
+      const { data } = await api.post('/auth/signup', form)
+      login(data.accessToken, data.user)
+      toast.success('Conta criada com sucesso! Bem-vindo(a)!')
+      navigate('/')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      const errData = (err as { response?: { data?: { error?: string; message?: string } } })?.response?.data
+      const msg = errData?.error ?? errData?.message
       toast.error(msg || 'Erro ao criar conta')
     } finally {
       setLoading(false)
