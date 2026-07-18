@@ -70,12 +70,17 @@ export function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-400">
-            Não tem conta?{' '}
-            <Link to="/signup" className="text-indigo-400 hover:text-indigo-300 font-medium">
-              Criar conta
+          <div className="mt-6 flex flex-col items-center gap-2 text-sm text-slate-400">
+            <Link to="/forgot-password" className="text-slate-500 hover:text-slate-300 transition-colors">
+              Esqueceu a senha?
             </Link>
-          </p>
+            <span>
+              Não tem conta?{' '}
+              <Link to="/signup" className="text-indigo-400 hover:text-indigo-300 font-medium">
+                Criar conta
+              </Link>
+            </span>
+          </div>
         </div>
       </div>
     </div>
