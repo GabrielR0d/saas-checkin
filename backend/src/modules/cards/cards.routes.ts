@@ -68,7 +68,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     const { label, status, clientId } = req.body
     const updated = await prisma.card.updateMany({
       where: { id: req.params.id, tenantId: req.user.tenantId },
-      data: { label: label ?? undefined, status: status ?? undefined, clientId: clientId === '' ? null : clientId ?? undefined },
+      data: { label: label === '' ? null : label ?? undefined, status: status ?? undefined, clientId: clientId === '' ? null : clientId ?? undefined },
     })
     if (updated.count === 0) return res.status(404).json({ error: 'Not found' })
     const card = await prisma.card.findUnique({ where: { id: req.params.id }, include: { client: true } })

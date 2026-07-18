@@ -85,14 +85,16 @@ router.put('/:id', async (req: Request, res: Response) => {
     const { name, phone, phoneNumber, email, document, isActive } = req.body
     const cleanPhoneNumber =
       phoneNumber === undefined ? undefined : phoneNumber ? String(phoneNumber).replace(/\D/g, '') || null : null
+    // Treat empty strings as null for optional fields, so clearing a field actually clears it in the DB
+    const nullOrValue = (v: unknown) => (v === undefined ? undefined : v === '' || v == null ? null : String(v))
     const updated = await prisma.client.updateMany({
       where: { id: req.params.id, tenantId: req.user.tenantId },
       data: {
         name,
         phone,
         phoneNumber: cleanPhoneNumber,
-        email: email ?? undefined,
-        document: document ?? undefined,
+        email: nullOrValue(email),
+        document: nullOrValue(document),
         isActive: isActive ?? undefined,
       },
     })

@@ -49,7 +49,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     const { name, location } = req.body
     const updated = await prisma.device.updateMany({
       where: { id: req.params.id, tenantId: req.user.tenantId },
-      data: { name: name ?? undefined, location: location ?? undefined },
+      data: { name: name ?? undefined, location: location === undefined ? undefined : location || null },
     })
     if (updated.count === 0) return res.status(404).json({ error: 'Not found' })
     return res.json(await prisma.device.findUnique({ where: { id: req.params.id } }))

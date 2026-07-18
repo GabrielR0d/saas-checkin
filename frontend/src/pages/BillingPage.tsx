@@ -146,6 +146,10 @@ export function BillingPage() {
                     window.open('mailto:contato@exemplo.com?subject=Enterprise', '_blank')
                     return
                   }
+                  if (plan.price === 0) {
+                    toast('Para fazer downgrade para o plano Grátis, entre em contato com o suporte.', { icon: 'ℹ️' })
+                    return
+                  }
                   checkout.mutate(plan.id)
                 }}
                 disabled={plan.isCurrent || checkout.isPending}
@@ -160,7 +164,7 @@ export function BillingPage() {
                   : plan.price === -1
                   ? 'Falar com vendas'
                   : plan.price === 0
-                  ? 'Usar grátis'
+                  ? 'Downgrade para Grátis'
                   : 'Fazer upgrade'}
               </button>
             </div>

@@ -14,13 +14,14 @@ export function rateLimit(options: { windowMs: number; max: number; message?: st
   const { windowMs, max, message = 'Too many requests' } = options
   const buckets = new Map<string, Bucket>()
 
-  // Clean stale buckets every windowMs to avoid memory leak
+  // Clean stale buckets every windowMs to avoid memory leak.
+  // .unref() so this timer doesn't prevent Node from exiting gracefully.
   setInterval(() => {
     const now = Date.now()
     for (const [key, bucket] of buckets) {
       if (bucket.resetAt < now) buckets.delete(key)
     }
-  }, windowMs)
+  }, windowMs).unref()
 
   return (req: Request, res: Response, next: NextFunction): void => {
     const ip =

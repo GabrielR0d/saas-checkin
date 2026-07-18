@@ -68,7 +68,7 @@ export function DevicesPage() {
 
   const updateDevice = useMutation({
     mutationFn: (body: NewDeviceForm) =>
-      api.put(`/devices/${editDevice?.id}`, { ...body, location: body.location || undefined }),
+      api.put(`/devices/${editDevice?.id}`, { ...body, location: body.location || null }),
     onSuccess: () => {
       toast.success('Dispositivo atualizado!')
       qc.invalidateQueries({ queryKey: ['devices'] })
