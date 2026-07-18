@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Eye, EyeOff, Copy, RefreshCw } from 'lucide-react'
+import { Plus, Eye, EyeOff, Copy, RefreshCw, Pencil, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
 import type { Device } from '../types'
@@ -26,6 +26,8 @@ function timeAgo(dateStr?: string) {
 export function DevicesPage() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState<NewDeviceForm>(EMPTY)
+  const [editDevice, setEditDevice] = useState<Device | null>(null)
+  const [editForm, setEditForm] = useState<NewDeviceForm>(EMPTY)
   const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set())
   const qc = useQueryClient()
 
@@ -56,6 +58,26 @@ export function DevicesPage() {
       qc.invalidateQueries({ queryKey: ['devices'] })
     },
     onError: () => toast.error('Erro ao rotacionar chave'),
+  })
+
+  const updateDevice = useMutation({
+    mutationFn: (body: NewDeviceForm) =>
+      api.put(`/devices/${editDevice?.id}`, { ...body, location: body.location || undefined }),
+    onSuccess: () => {
+      toast.success('Dispositivo atualizado!')
+      qc.invalidateQueries({ queryKey: ['devices'] })
+      setEditDevice(null)
+    },
+    onError: () => toast.error('Erro ao atualizar dispositivo'),
+  })
+
+  const deleteDevice = useMutation({
+    mutationFn: (id: string) => api.delete(`/devices/${id}`),
+    onSuccess: () => {
+      toast.success('Dispositivo removido!')
+      qc.invalidateQueries({ queryKey: ['devices'] })
+    },
+    onError: () => toast.error('Erro ao remover dispositivo'),
   })
 
   function toggleReveal(id: string) {
@@ -105,11 +127,29 @@ export function DevicesPage() {
                       <p className="text-sm text-slate-400 mt-0.5">{device.location}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${device.isOnline ? 'bg-green-400' : 'bg-slate-600'}`} />
                     <span className={`text-xs font-medium ${device.isOnline ? 'text-green-400' : 'text-slate-500'}`}>
                       {device.isOnline ? 'Online' : 'Offline'}
                     </span>
+                    <button
+                      onClick={() => { setEditDevice(device); setEditForm({ name: device.name, location: device.location ?? '' }) }}
+                      className="p-1 text-slate-500 hover:text-slate-100 hover:bg-slate-700 rounded transition-colors"
+                      title="Editar"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Remover "${device.name}"? Os logs históricos serão mantidos.`)) {
+                          deleteDevice.mutate(device.id)
+                        }
+                      }}
+                      className="p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                      title="Remover"
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </div>
 
@@ -188,6 +228,43 @@ export function DevicesPage() {
                 </button>
                 <button type="submit" disabled={create.isPending} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
                   {create.isPending ? 'Criando...' : 'Criar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editDevice && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold text-slate-100 mb-4">Editar Dispositivo</h2>
+            <form onSubmit={(e) => { e.preventDefault(); updateDevice.mutate(editForm) }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Nome *</label>
+                <input
+                  required
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Localização</label>
+                <input
+                  value={editForm.location}
+                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                  placeholder="Ex: Portão A"
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setEditDevice(null)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={updateDevice.isPending} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                  {updateDevice.isPending ? 'Salvando...' : 'Salvar'}
                 </button>
               </div>
             </form>
