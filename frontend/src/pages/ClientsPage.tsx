@@ -57,7 +57,13 @@ export function ClientsPage() {
       setShowModal(false)
       setForm(EMPTY)
     },
-    onError: () => toast.error('Erro ao criar participante'),
+    onError: (err: any) => {
+      if (err?.response?.data?.error === 'PLAN_LIMIT') {
+        toast.error(`Limite do plano atingido (${err.response.data.current}/${err.response.data.limit}). Faça upgrade em Planos.`)
+      } else {
+        toast.error('Erro ao criar participante')
+      }
+    },
   })
 
   const totalPages = data?.meta?.totalPages ?? 1

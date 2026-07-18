@@ -48,7 +48,13 @@ export function DevicesPage() {
       setShowModal(false)
       setForm(EMPTY)
     },
-    onError: () => toast.error('Erro ao criar dispositivo'),
+    onError: (err: any) => {
+      if (err?.response?.data?.error === 'PLAN_LIMIT') {
+        toast.error(`Limite do plano atingido (${err.response.data.current}/${err.response.data.limit}). Faça upgrade em Planos.`)
+      } else {
+        toast.error('Erro ao criar dispositivo')
+      }
+    },
   })
 
   const rotateKey = useMutation({
