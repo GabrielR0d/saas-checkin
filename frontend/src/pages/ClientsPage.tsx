@@ -73,7 +73,7 @@ export function ClientsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Participantes</h1>
-          <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} participantes cadastrados</p>
+          <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} participantes registados</p>
         </div>
         <button
           onClick={() => setShowModal(true)}

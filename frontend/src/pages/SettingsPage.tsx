@@ -269,7 +269,7 @@ export function SettingsPage() {
             </button>
           </div>
           <p className="text-xs text-slate-500 mt-1.5">
-            Evento: <code className="text-slate-400">MESSAGES_UPSERT</code> · O cliente envia a localização pelo WhatsApp e este endpoint registra o check-in.
+            Evento: <code className="text-slate-400">MESSAGES_UPSERT</code> · O cliente envia a localização pelo WhatsApp e este endpoint regista o check-in.
           </p>
         </div>
       </div>

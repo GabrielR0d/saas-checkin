@@ -105,7 +105,7 @@ export function DevicesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Dispositivos</h1>
-          <p className="text-slate-400 text-sm mt-1">{devices?.length ?? 0} dispositivos cadastrados</p>
+          <p className="text-slate-400 text-sm mt-1">{devices?.length ?? 0} dispositivos registados</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -119,7 +119,7 @@ export function DevicesPage() {
       {isLoading ? (
         <div className="text-center py-12 text-slate-500">A carregar...</div>
       ) : !devices || devices.length === 0 ? (
-        <div className="text-center py-12 text-slate-500">Nenhum dispositivo cadastrado</div>
+        <div className="text-center py-12 text-slate-500">Sem dispositivos registados</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {devices.map((device) => {

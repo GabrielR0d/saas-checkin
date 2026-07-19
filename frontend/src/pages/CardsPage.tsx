@@ -123,7 +123,7 @@ export function CardsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Cartões</h1>
-          <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} cartões cadastrados</p>
+          <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} cartões registados</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
