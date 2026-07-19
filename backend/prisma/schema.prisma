@@ -112,7 +112,7 @@ model Card {
   id         String      @id @default(cuid())
   tenantId   String
   tenant     Tenant      @relation(fields: [tenantId], references: [id])
-  uid        String      @unique
+  uid        String
   label      String?
   status     CardStatus  @default(ACTIVE)
   clientId   String?
@@ -121,7 +121,7 @@ model Card {
   createdAt  DateTime    @default(now())
   accessLogs AccessLog[]
 
-  @@index([tenantId, uid])
+  @@unique([tenantId, uid])
   @@index([tenantId, clientId])
 }
 
