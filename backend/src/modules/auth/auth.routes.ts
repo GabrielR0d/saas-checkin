@@ -107,12 +107,12 @@ router.post('/forgot-password', forgotPwLimiter, async (req: Request, res: Respo
       const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`
       await sendMail(
         email,
-        'Redefinição de senha — CheckIn SaaS',
+        'Redefinição de palavra-passe — CheckIn SaaS',
         `<p>Olá!</p>
-         <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
-         <p><a href="${resetUrl}">Clique aqui para redefinir sua senha</a></p>
-         <p>Este link expira em 1 hora. Se você não solicitou a redefinição, ignore este email.</p>
-         <p>— Equipe CheckIn SaaS</p>`
+         <p>Recebemos um pedido para redefinir a palavra-passe da sua conta.</p>
+         <p><a href="${resetUrl}">Clique aqui para redefinir a sua palavra-passe</a></p>
+         <p>Este link expira em 1 hora. Se não solicitou a redefinição, ignore este email.</p>
+         <p>— Equipa CheckIn SaaS</p>`
       )
     }
     return res.json({ success: true }) // Always 200 — no email enumeration
@@ -127,7 +127,7 @@ router.post('/reset-password', async (req: Request, res: Response) => {
   try {
     const { token, newPassword } = req.body
     if (!token || !newPassword || newPassword.length < 6) {
-      return res.status(400).json({ error: 'Token e nova senha (mín. 6 caracteres) são obrigatórios' })
+      return res.status(400).json({ error: 'Token e nova palavra-passe (mín. 6 caracteres) são obrigatórios' })
     }
     const entry = await prisma.passwordResetToken.findUnique({ where: { token } })
     if (!entry || entry.expiresAt < new Date()) {

@@ -109,7 +109,7 @@ export function SignupPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Senha</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">Palavra-passe</label>
               <input
                 type="password"
                 value={form.password}

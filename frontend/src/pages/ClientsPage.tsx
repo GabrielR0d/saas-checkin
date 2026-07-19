@@ -122,7 +122,7 @@ export function ClientsPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6} className="text-center py-10 text-slate-500">Carregando...</td></tr>
+              <tr><td colSpan={6} className="text-center py-10 text-slate-500">A carregar...</td></tr>
             ) : data?.data.length === 0 ? (
               <tr><td colSpan={6} className="text-center py-10 text-slate-500">Nenhum participante encontrado</td></tr>
             ) : (
@@ -251,7 +251,7 @@ export function ClientsPage() {
                   disabled={create.isPending}
                   className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                 >
-                  {create.isPending ? 'Salvando...' : 'Salvar'}
+                  {create.isPending ? 'A guardar...' : 'Guardar'}
                 </button>
               </div>
             </form>

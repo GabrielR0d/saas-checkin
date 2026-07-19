@@ -24,10 +24,10 @@ export default function SettingsScreen() {
   })
 
   async function handleLogout() {
-    Alert.alert('Sair', 'Tem certeza que deseja encerrar a sessão?', [
+    Alert.alert('Terminar sessão', 'Tem a certeza que quer terminar a sessão?', [
       { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Sair',
+        text: 'Terminar sessão',
         style: 'destructive',
         onPress: async () => {
           await clearToken()
@@ -48,7 +48,7 @@ export default function SettingsScreen() {
     onSuccess: (res) => {
       queryClient.setQueryData(['settings'], res.data)
     },
-    onError: () => Alert.alert('Erro', 'Não foi possível salvar as configurações'),
+    onError: () => Alert.alert('Erro', 'Não foi possível guardar as definições'),
   })
 
   function toggle(field: 'notifyOnEntry' | 'notifyOnExit' | 'notifyOnUnknown') {
@@ -67,7 +67,7 @@ export default function SettingsScreen() {
   if (!settings) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Erro ao carregar configurações</Text>
+        <Text style={styles.errorText}>Erro ao carregar as definições</Text>
       </View>
     )
   }
@@ -138,7 +138,7 @@ export default function SettingsScreen() {
         ) : null}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={18} color="#f87171" />
-          <Text style={styles.logoutText}>Sair</Text>
+          <Text style={styles.logoutText}>Terminar sessão</Text>
         </TouchableOpacity>
       </View>
 

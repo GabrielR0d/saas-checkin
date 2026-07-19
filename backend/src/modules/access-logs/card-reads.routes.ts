@@ -83,7 +83,7 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
       const waNumber = card.client.phoneNumber || card.client.phone?.replace(/\D/g, '')
 
       if (shouldNotify && settings?.whatsappEnabled && settings?.whatsappApiUrl && waNumber) {
-        const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+        const time = new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Lisbon' })
         const msg = eventType === 'ENTRY'
           ? `✅ Entrada às ${time}. Bem-vindo(a), *${card.client.name}*!`
           : `👋 Saída às ${time}. Até logo, *${card.client.name}*!`

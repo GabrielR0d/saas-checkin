@@ -62,7 +62,7 @@ export default function DevicesScreen() {
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         ListEmptyComponent={
-          <Text style={styles.empty}>{isLoading ? 'Carregando...' : 'Nenhum dispositivo'}</Text>
+          <Text style={styles.empty}>{isLoading ? 'A carregar...' : 'Sem dispositivos'}</Text>
         }
       />
     </View>

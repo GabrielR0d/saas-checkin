@@ -96,7 +96,7 @@ export function LogsPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `registros-${new Date().toISOString().slice(0, 10)}.csv`
+      a.download = `registos-${new Date().toISOString().slice(0, 10)}.csv`
       a.click()
       URL.revokeObjectURL(url)
     } catch {
@@ -109,7 +109,7 @@ export function LogsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Histórico de Acessos</h1>
-          <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} registros</p>
+          <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} registos</p>
         </div>
         <button
           onClick={exportCsv}
@@ -228,14 +228,14 @@ export function LogsPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={7} className="text-center py-10 text-slate-500">Carregando...</td></tr>
+              <tr><td colSpan={7} className="text-center py-10 text-slate-500">A carregar...</td></tr>
             ) : data?.data.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-10 text-slate-500">Nenhum registro encontrado</td></tr>
+              <tr><td colSpan={7} className="text-center py-10 text-slate-500">Sem registos encontrados</td></tr>
             ) : (
               data?.data.map((log) => (
                 <tr key={log.id} className="border-b border-slate-800 last:border-0 hover:bg-slate-800/50 transition-colors">
                   <td className="px-4 py-3 text-slate-300 whitespace-nowrap">
-                    {new Date(log.occurredAt).toLocaleString('pt-BR')}
+                    {new Date(log.occurredAt).toLocaleString('pt-PT')}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${EVENT_COLORS[log.eventType]}`}>

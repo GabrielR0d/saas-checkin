@@ -91,7 +91,7 @@ export function ClientDetailPage() {
   }
 
   if (isLoading) {
-    return <div className="p-6 text-slate-400">Carregando...</div>
+    return <div className="p-6 text-slate-400">A carregar...</div>
   }
 
   if (!client) {
@@ -196,7 +196,7 @@ export function ClientDetailPage() {
       {tab === 'history' && (
         <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
           {!logs?.data || logs.data.length === 0 ? (
-            <div className="py-10 text-center text-slate-500 text-sm">Nenhum registro de acesso</div>
+            <div className="py-10 text-center text-slate-500 text-sm">Sem registos de acesso</div>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -212,7 +212,7 @@ export function ClientDetailPage() {
                 {logs.data.map((log) => (
                   <tr key={log.id} className="border-b border-slate-800 last:border-0">
                     <td className="px-4 py-3 text-slate-300">
-                      {new Date(log.occurredAt).toLocaleString('pt-BR')}
+                      {new Date(log.occurredAt).toLocaleString('pt-PT')}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${EVENT_COLORS[log.eventType]}`}>
@@ -325,7 +325,7 @@ export function ClientDetailPage() {
                   disabled={updateClient.isPending}
                   className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                 >
-                  {updateClient.isPending ? 'Salvando...' : 'Salvar'}
+                  {updateClient.isPending ? 'A guardar...' : 'Guardar'}
                 </button>
               </div>
             </form>

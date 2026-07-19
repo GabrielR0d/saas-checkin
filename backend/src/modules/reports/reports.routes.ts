@@ -6,23 +6,27 @@ import { authenticate } from '../../middlewares/auth.middleware'
 const router = Router()
 router.use(authenticate)
 
-// Brazil Standard Time is UTC-3 year-round (DST was abolished in 2019).
-// Render servers run in UTC, so we compute midnight-BRT in UTC to avoid
-// the dashboard's "today" spanning from 9 pm local time of the previous day.
-function brazilTodayStartUTC(): Date {
-  const now = new Date()
-  // Shift to BRT
-  const brt = new Date(now.getTime() - 3 * 60 * 60 * 1000)
-  // Truncate to midnight in BRT
-  brt.setUTCHours(0, 0, 0, 0)
-  // Convert back to UTC
-  return new Date(brt.getTime() + 3 * 60 * 60 * 1000)
+// Portugal observes Western European Time (WET = UTC+0 in winter, WEST = UTC+1 in summer).
+// Render servers run in UTC, so we compute midnight-Lisbon in UTC to avoid
+// the dashboard's "today" spanning from the previous day.
+function todayStartLisbon(): Date {
+  const TZ = 'Europe/Lisbon'
+  // Today's date string in Lisbon timezone (sv-SE gives ISO "YYYY-MM-DD")
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: TZ })
+  // Midnight UTC baseline for that date
+  const midnight = new Date(`${today}T00:00:00Z`)
+  // Hour in Lisbon at midnight UTC: 0 in winter (UTC+0), 1 in summer (UTC+1)
+  const lisbonHour = +(new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ, hour: 'numeric', hour12: false,
+  }).format(midnight)) || 0
+  // Lisbon midnight in UTC = midnight UTC shifted back by lisbonHour hours
+  return new Date(midnight.getTime() - lisbonHour * 3_600_000)
 }
 
 router.get('/summary', async (req: Request, res: Response) => {
   try {
     const tenantId = req.user.tenantId
-    const todayStart = brazilTodayStartUTC()
+    const todayStart = todayStartLisbon()
 
     const [totalClients, totalCards, totalDevices, onlineDevices, todayEntries, todayExits, unknownCards, todayWhatsappCheckins] =
       await Promise.all([
@@ -69,7 +73,7 @@ router.get('/export/csv', async (req: Request, res: Response) => {
     })
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8')
-    res.setHeader('Content-Disposition', 'attachment; filename="registros.csv"')
+    res.setHeader('Content-Disposition', 'attachment; filename="registos.csv"')
     res.write('\uFEFF') // UTF-8 BOM
 
     const stringifier = stringify({
@@ -89,7 +93,7 @@ router.get('/export/csv', async (req: Request, res: Response) => {
 
     for (const log of logs) {
       stringifier.write({
-        occurredAt: log.occurredAt.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+        occurredAt: log.occurredAt.toLocaleString('pt-PT', { timeZone: 'Europe/Lisbon' }),
         clientName: log.client?.name ?? '',
         clientPhone: log.client?.phone ?? '',
         cardUid: log.cardUid ?? '',

@@ -97,7 +97,7 @@ export function BillingPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-slate-500">Carregando planos...</div>
+        <div className="text-center py-12 text-slate-500">A carregar planos...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
           {displayPlans.map((plan) => (
@@ -129,7 +129,7 @@ export function BillingPage() {
                     <div className="flex items-baseline gap-1">
                       <span className="text-xs text-slate-400">R$</span>
                       <span className="text-3xl font-bold text-slate-100">
-                        {(plan.price / 100).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        {(plan.price / 100).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>
                       <span className="text-sm text-slate-400">/{plan.interval ?? 'mês'}</span>
                     </div>
@@ -149,11 +149,11 @@ export function BillingPage() {
               <button
                 onClick={() => {
                   if (plan.price === -1) {
-                    window.open('mailto:contato@exemplo.com?subject=Enterprise', '_blank')
+                    window.open('mailto:contacto@exemplo.com?subject=Enterprise', '_blank')
                     return
                   }
                   if (plan.price === 0) {
-                    toast('Para fazer downgrade para o plano Grátis, entre em contato com o suporte.', { icon: 'ℹ️' })
+                    toast('Para fazer downgrade para o plano Grátis, entre em contacto com o suporte.', { icon: 'ℹ️' })
                     return
                   }
                   checkout.mutate(plan.id)
