@@ -135,7 +135,7 @@ router.post('/webhook', webhookLimiter, async (req: Request, res: Response): Pro
       },
     })
 
-    const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
     const msg =
       direction === 'IN'
         ? `✅ Entrada às ${time}. Bem-vindo(a), ${client.name}!`

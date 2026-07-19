@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { Check, Zap } from 'lucide-react'
@@ -36,8 +36,11 @@ export function BillingPage() {
     queryFn: async () => (await api.get('/billing/me')).data,
   })
 
+  const [checkingOutPlanId, setCheckingOutPlanId] = useState<string | null>(null)
+
   const checkout = useMutation({
     mutationFn: async (planId: string) => {
+      setCheckingOutPlanId(planId)
       const { data } = await api.post('/billing/checkout', { planId })
       return data
     },
@@ -46,7 +49,10 @@ export function BillingPage() {
         window.location.href = data.url
       }
     },
-    onError: () => toast.error('Erro ao iniciar checkout'),
+    onError: () => {
+      setCheckingOutPlanId(null)
+      toast.error('Erro ao iniciar checkout')
+    },
   })
 
   const FALLBACK_PLANS: Plan[] = [
@@ -152,7 +158,7 @@ export function BillingPage() {
                   }
                   checkout.mutate(plan.id)
                 }}
-                disabled={plan.isCurrent || checkout.isPending}
+                disabled={plan.isCurrent || checkingOutPlanId === plan.id}
                 className={`w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                   plan.isCurrent
                     ? 'bg-slate-800 text-slate-500 cursor-default'
@@ -161,7 +167,7 @@ export function BillingPage() {
               >
                 {plan.isCurrent
                   ? 'Plano atual'
-                  : checkout.isPending
+                  : checkingOutPlanId === plan.id
                   ? 'Redirecionando...'
                   : plan.price === -1
                   ? 'Falar com vendas'
