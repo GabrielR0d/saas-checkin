@@ -220,20 +220,20 @@ export function ClientDetailPage() {
                   required
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                  placeholder="(11) 99999-9999"
+                  placeholder="912 345 678"
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">
                   Telefone WhatsApp
-                  <span className="ml-1.5 text-xs font-normal text-slate-500">(formato: 5511999999999)</span>
+                  <span className="ml-1.5 text-xs font-normal text-slate-500">(formato: 351912345678)</span>
                 </label>
                 <input
                   type="tel"
                   value={editForm.phoneNumber}
                   onChange={(e) => setEditForm({ ...editForm, phoneNumber: e.target.value })}
-                  placeholder="5511999999999"
+                  placeholder="351912345678"
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
                 />
               </div>
@@ -251,7 +251,7 @@ export function ClientDetailPage() {
                 <input
                   value={editForm.document}
                   onChange={(e) => setEditForm({ ...editForm, document: e.target.value })}
-                  placeholder="CPF / RG"
+                  placeholder="NIF / CC"
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
                 />
               </div>
