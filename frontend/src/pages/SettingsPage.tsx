@@ -316,7 +316,7 @@ export function SettingsPage() {
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
               >
                 <QrCode size={16} />
-                {loadingQr ? 'Gerando...' : 'Gerar QR Code'}
+                {loadingQr ? 'A gerar...' : 'Gerar QR Code'}
               </button>
               {qrImage && (
                 <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl w-fit">
@@ -358,10 +358,10 @@ export function SettingsPage() {
               className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
             />
             {addressSearching && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 animate-pulse">buscando…</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 animate-pulse">a pesquisar…</span>
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-1">Digite o endereço do estabelecimento — lat/lng serão preenchidos automaticamente.</p>
+          <p className="text-xs text-slate-500 mt-1">Introduza o endereço do estabelecimento — lat/lng serão preenchidos automaticamente.</p>
         </div>
 
         {/* OR divider */}
