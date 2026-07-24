@@ -123,7 +123,7 @@ export function ClientsPage() {
             {isLoading ? (
               <tr><td colSpan={5} className="text-center py-10 text-slate-500">A carregar...</td></tr>
             ) : data?.data.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-10 text-slate-500">Nenhum participante encontrado</td></tr>
+              <tr><td colSpan={5} className="text-center py-10 text-slate-500">Sem participantes encontrados</td></tr>
             ) : (
               data?.data.map((client) => (
                 <tr
