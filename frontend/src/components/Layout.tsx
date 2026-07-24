@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../store/auth'
 import { socket } from '../lib/socket'
+import { ErrorBoundary } from './ErrorBoundary'
 
 const NAV_ITEMS = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
@@ -77,7 +78,9 @@ export function Layout() {
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )
