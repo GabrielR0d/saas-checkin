@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
 import { useAuth } from '../store/auth'
@@ -10,6 +10,8 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const sessionExpired = searchParams.get('expired') === 'true'
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -35,6 +37,11 @@ export function LoginPage() {
           <p className="text-slate-400">Entre na sua conta</p>
         </div>
 
+        {sessionExpired && (
+          <div className="mb-4 rounded-lg bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-sm text-amber-400">
+            A sua sessão expirou. Inicie sessão novamente.
+          </div>
+        )}
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
