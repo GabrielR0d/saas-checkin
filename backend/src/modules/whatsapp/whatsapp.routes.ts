@@ -194,7 +194,8 @@ router.get('/status', async (req: Request, res: Response) => {
     })
     return res.json(data)
   } catch (err: any) {
-    return res.json({ connected: false, error: err.message })
+    console.error('[WhatsApp] status error:', err.message)
+    return res.json({ connected: false })
   }
 })
 
