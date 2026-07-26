@@ -231,7 +231,7 @@ export function SettingsPage() {
             type="text"
             value={form.whatsappInstanceId}
             onChange={(e) => setForm({ ...form, whatsappInstanceId: e.target.value })}
-            placeholder="Ex: my-instance"
+            placeholder="Ex: minha-instancia"
             className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
           />
         </div>
