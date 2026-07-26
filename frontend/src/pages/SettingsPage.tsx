@@ -379,7 +379,7 @@ export function SettingsPage() {
           className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 border border-slate-700 text-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
         >
           <Locate size={16} className={geoLocating ? 'animate-pulse text-indigo-400' : ''} />
-          {geoLocating ? 'Obtendo localização...' : 'Usar minha localização atual'}
+          {geoLocating ? 'A obter localização...' : 'Usar a minha localização atual'}
         </button>
 
         {/* Manual lat/lng + radius */}
@@ -395,7 +395,7 @@ export function SettingsPage() {
                 step="any"
                 value={form.locationLat ?? ''}
                 onChange={(e) => setForm({ ...form, locationLat: e.target.value === '' ? null : parseFloat(e.target.value) })}
-                placeholder="-23.5505"
+                placeholder="38.7169"
                 className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
               />
             </div>
@@ -406,7 +406,7 @@ export function SettingsPage() {
                 step="any"
                 value={form.locationLng ?? ''}
                 onChange={(e) => setForm({ ...form, locationLng: e.target.value === '' ? null : parseFloat(e.target.value) })}
-                placeholder="-46.6333"
+                placeholder="-9.1390"
                 className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
               />
             </div>

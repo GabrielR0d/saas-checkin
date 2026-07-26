@@ -132,18 +132,28 @@ router.delete('/:id', async (req: Request, res: Response) => {
 })
 
 // POST /clients/import — bulk create from JSON array
-router.post('/import', planLimits('clients'), async (req: Request, res: Response) => {
+router.post('/import', async (req: Request, res: Response) => {
   try {
     const rows: Array<{ name?: string; phone?: string; phoneNumber?: string; email?: string; document?: string }> =
       Array.isArray(req.body.clients) ? req.body.clients : []
     if (!rows.length) return res.status(400).json({ error: 'Nenhum dado para importar' })
     if (rows.length > 1000) return res.status(400).json({ error: 'Máximo 1000 linhas por importação' })
 
+    // Enforce plan limits for bulk import
+    const tenant = await prisma.tenant.findUnique({ where: { id: req.user.tenantId } })
+    const LIMITS: Record<string, number> = { FREE: 50, BASIC: 500, PRO: Infinity, ENTERPRISE: Infinity }
+    const limit = LIMITS[tenant?.plan ?? 'FREE'] ?? 50
+    const current = await prisma.client.count({ where: { tenantId: req.user.tenantId } })
+    if (current >= limit) {
+      return res.status(403).json({ error: 'PLAN_LIMIT', limit, current, currentPlan: tenant?.plan })
+    }
+
     let created = 0
     let skipped = 0
     const errors: string[] = []
+    const slotsLeft = limit === Infinity ? rows.length : Math.max(0, limit - current)
 
-    for (const row of rows) {
+    for (const row of rows.slice(0, slotsLeft)) {
       const name = row.name?.trim()
       const phone = row.phone?.trim()
       if (!name || !phone) { skipped++; continue }

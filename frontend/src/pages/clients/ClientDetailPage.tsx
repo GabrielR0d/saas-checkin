@@ -63,8 +63,12 @@ export function ClientDetailPage() {
 
   const deleteClient = useMutation({
     mutationFn: () => api.delete(`/clients/${id}`),
-    onSuccess: () => {
-      toast.success('Participante eliminado')
+    onSuccess: (res) => {
+      if (res.data?.softDeleted) {
+        toast('Participante desativado (tem registos históricos que são preservados)', { icon: 'ℹ️' })
+      } else {
+        toast.success('Participante eliminado')
+      }
       qc.invalidateQueries({ queryKey: ['clients'] })
       navigate('/clients')
     },

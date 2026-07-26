@@ -84,6 +84,18 @@ export function ClientsPage() {
     },
   })
 
+  function downloadCsvTemplate() {
+    const header = 'nome,telefone,whatsapp,email,documento'
+    const example = 'João Silva,912345678,351912345678,joao@email.com,123456789'
+    const blob = new Blob([header + '\n' + example], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'modelo-participantes.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   async function handleCsvImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -125,15 +137,24 @@ export function ClientsPage() {
             className="hidden"
             onChange={handleCsvImport}
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-            title="Importar participantes via CSV (colunas: nome,telefone,whatsapp,email,documento)"
-          >
-            <Upload size={16} />
-            {importing ? 'A importar...' : 'Importar CSV'}
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 rounded-l-lg px-4 py-2 text-sm font-medium transition-colors border-r border-slate-700"
+              title="Importar participantes via CSV"
+            >
+              <Upload size={16} />
+              {importing ? 'A importar...' : 'Importar CSV'}
+            </button>
+            <button
+              onClick={downloadCsvTemplate}
+              className="px-2 py-2 bg-slate-800 hover:bg-slate-700 text-slate-500 hover:text-slate-300 rounded-r-lg text-sm transition-colors"
+              title="Descarregar modelo CSV"
+            >
+              ↓
+            </button>
+          </div>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"

@@ -127,9 +127,8 @@ export function BillingPage() {
                     <span className="text-2xl font-bold text-slate-100">Grátis</span>
                   ) : (
                     <div className="flex items-baseline gap-1">
-                      <span className="text-xs text-slate-400">R$</span>
                       <span className="text-3xl font-bold text-slate-100">
-                        {(plan.price / 100).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        {(plan.price / 100).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>
                       <span className="text-sm text-slate-400">/{plan.interval ?? 'mês'}</span>
                     </div>
