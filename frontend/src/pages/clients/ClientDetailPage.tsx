@@ -33,7 +33,6 @@ export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const [tab, setTab] = useState<'history'>('history')
   const [historyPage, setHistoryPage] = useState(1)
   const [showEdit, setShowEdit] = useState(false)
   const [editForm, setEditForm] = useState<EditForm>({ name: '', phone: '', phoneNumber: '', email: '', document: '' })
@@ -43,13 +42,11 @@ export function ClientDetailPage() {
     queryFn: async () => (await api.get(`/clients/${id}`)).data,
   })
 
-
-
   const { data: logs } = useQuery<{ data: AccessLog[]; meta: { total: number; totalPages: number } }>({
     queryKey: ['access-logs', 'client', id, historyPage],
     queryFn: async () =>
       (await api.get('/access-logs', { params: { clientId: id, limit: 20, page: historyPage } })).data,
-    enabled: tab === 'history',
+    enabled: !!id,
   })
 
   const toggleActive = useMutation({
@@ -164,8 +161,7 @@ export function ClientDetailPage() {
         </div>
       </div>
 
-      {tab === 'history' && (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
           {!logs?.data || logs.data.length === 0 ? (
             <div className="py-10 text-center text-slate-500 text-sm">Sem registos de acesso</div>
           ) : (
@@ -219,8 +215,7 @@ export function ClientDetailPage() {
               </div>
             </div>
           )}
-        </div>
-      )}
+      </div>
 
       {/* Edit Modal */}
       {showEdit && (
