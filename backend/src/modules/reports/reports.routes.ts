@@ -67,7 +67,7 @@ router.get('/export/csv', async (req: Request, res: Response) => {
       header: true,
       columns: {
         occurredAt: 'Data/Hora',
-        clientName: 'Cliente',
+        clientName: 'Participante',
         clientPhone: 'Telefone',
         cardUid: 'UID Cartão',
         eventType: 'Evento',
