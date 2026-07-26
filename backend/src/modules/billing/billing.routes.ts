@@ -7,25 +7,25 @@ const router = Router()
 
 const PLANS = [
   {
-    id: 'FREE', name: 'Free', price: 0,
-    features: ['50 clientes', '10 cartões', '2 dispositivos', 'Notificações WhatsApp'],
+    id: 'FREE', name: 'Starter', price: 0,
+    features: ['Até 50 participantes', '2 dispositivos', 'Notificações WhatsApp', 'Histórico 30 dias'],
     limits: { clients: 50, cards: 10, devices: 2 },
   },
   {
     id: 'BASIC', name: 'Basic', price: 4900,
     priceId: process.env.STRIPE_BASIC_PRICE_ID,
-    features: ['500 clientes', '100 cartões', '10 dispositivos', 'Notificações WhatsApp', 'Exportar CSV'],
+    features: ['Até 500 participantes', '10 dispositivos', 'Notificações WhatsApp', 'Exportar CSV', 'Suporte prioritário'],
     limits: { clients: 500, cards: 100, devices: 10 },
   },
   {
     id: 'PRO', name: 'Pro', price: 14900,
     priceId: process.env.STRIPE_PRO_PRICE_ID,
-    features: ['Ilimitado', 'Suporte prioritário', 'Exportar CSV', 'App mobile'],
+    features: ['Participantes ilimitados', 'Dispositivos ilimitados', 'Exportar CSV', 'App mobile', 'Suporte prioritário'],
     limits: { clients: -1, cards: -1, devices: -1 },
   },
   {
     id: 'ENTERPRISE', name: 'Enterprise', price: -1,
-    features: ['Tudo do Pro', 'SLA garantido', 'Onboarding dedicado'],
+    features: ['Tudo do Pro', 'SLA garantido', 'Onboarding dedicado', 'Contrato personalizado'],
     limits: { clients: -1, cards: -1, devices: -1 },
   },
 ]

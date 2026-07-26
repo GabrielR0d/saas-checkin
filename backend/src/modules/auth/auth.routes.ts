@@ -12,6 +12,8 @@ import { rateLimit } from '../../middlewares/rate-limit.middleware'
 const loginLimiter = rateLimit({ windowMs: 60_000, max: 10, message: 'Muitas tentativas. Tente novamente em 1 minuto.' })
 // 5 password reset emails per hour per IP
 const forgotPwLimiter = rateLimit({ windowMs: 3_600_000, max: 5, message: 'Muitas solicitações de recuperação. Tente novamente em 1 hora.' })
+// 30 slug checks per minute per IP — prevents slug enumeration
+const slugCheckLimiter = rateLimit({ windowMs: 60_000, max: 30, message: 'Muitas verificações. Tente novamente em 1 minuto.' })
 
 const router = Router()
 
@@ -86,7 +88,7 @@ router.post('/signup', async (req: Request, res: Response) => {
 })
 
 // GET /check-slug
-router.get('/check-slug', async (req: Request, res: Response) => {
+router.get('/check-slug', slugCheckLimiter, async (req: Request, res: Response) => {
   const slug = req.query.slug as string
   if (!slug) return res.status(400).json({ error: 'slug query param required' })
   const tenant = await prisma.tenant.findUnique({ where: { slug } })
