@@ -96,7 +96,7 @@ export function LogsPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `registos-${new Date().toISOString().slice(0, 10)}.csv`
+      a.download = `registos-${new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Lisbon' })}.csv`
       a.click()
       URL.revokeObjectURL(url)
     } catch {
