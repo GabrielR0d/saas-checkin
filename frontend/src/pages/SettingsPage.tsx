@@ -202,7 +202,7 @@ export function SettingsPage() {
 
       {/* WhatsApp connection */}
       <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 space-y-4">
-        <h2 className="text-base font-semibold text-slate-100">WhatsApp — Conexão</h2>
+        <h2 className="text-base font-semibold text-slate-100">WhatsApp — Ligação</h2>
 
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-1.5">Provedor</label>
@@ -280,7 +280,7 @@ export function SettingsPage() {
       {hasWaConfig && (
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-slate-100">Status da Conexão WhatsApp</h2>
+            <h2 className="text-base font-semibold text-slate-100">Estado da Ligação WhatsApp</h2>
             <button
               type="button"
               onClick={() => refetchWaStatus()}

@@ -202,7 +202,7 @@ export function ClientsPage() {
               <th className="px-4 py-3 text-slate-400 font-medium">Telefone</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Email</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Documento</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Status</th>
+              <th className="px-4 py-3 text-slate-400 font-medium">Estado</th>
             </tr>
           </thead>
           <tbody>

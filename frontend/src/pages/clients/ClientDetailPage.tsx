@@ -55,7 +55,7 @@ export function ClientDetailPage() {
   const toggleActive = useMutation({
     mutationFn: () => api.put(`/clients/${id}`, { isActive: !client?.isActive }),
     onSuccess: () => {
-      toast.success('Status atualizado')
+      toast.success('Estado atualizado')
       qc.invalidateQueries({ queryKey: ['clients', id] })
     },
     onError: () => toast.error('Erro ao atualizar'),

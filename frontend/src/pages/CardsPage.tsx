@@ -151,7 +151,7 @@ export function CardsPage() {
             <tr className="border-b border-slate-800 text-left">
               <th className="px-4 py-3 text-slate-400 font-medium">UID</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Label</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Status</th>
+              <th className="px-4 py-3 text-slate-400 font-medium">Estado</th>
               <th className="px-4 py-3 text-slate-400 font-medium">Participante</th>
               <th className="px-4 py-3 text-slate-400 font-medium w-20"></th>
             </tr>
@@ -250,7 +250,7 @@ export function CardsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Status</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Estado</label>
                 <select
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value as NewCardForm['status'] })}
@@ -310,7 +310,7 @@ export function CardsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Status</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Estado</label>
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value as EditCardForm['status'] })}
