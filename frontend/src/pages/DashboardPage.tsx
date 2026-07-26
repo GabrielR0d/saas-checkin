@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowDownLeft, ArrowUpRight, HelpCircle, Activity, MessageCircle } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, HelpCircle, Activity, Users } from 'lucide-react'
 import { api } from '../lib/api'
 import { socket } from '../lib/socket'
 import { useAuth } from '../store/auth'
@@ -71,11 +71,11 @@ export function DashboardPage() {
       bg: 'bg-blue-500/10',
     },
     {
-      label: 'WhatsApp hoje',
-      value: summary?.todayWhatsappCheckins ?? '—',
-      icon: MessageCircle,
-      color: 'text-green-400',
-      bg: 'bg-green-500/10',
+      label: 'Participantes ativos',
+      value: summary?.activeClients ?? '—',
+      icon: Users,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10',
     },
     {
       label: 'Dispositivos online',

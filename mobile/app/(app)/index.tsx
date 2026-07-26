@@ -15,8 +15,8 @@ const EVENT_CONFIG: Record<
 > = {
   ENTRY: { label: 'Entrada', color: '#4ade80', bg: '#166534', icon: 'log-in' },
   EXIT: { label: 'Saída', color: '#fbbf24', bg: '#92400e', icon: 'log-out' },
-  UNKNOWN_CARD: { label: 'Cartão Desconhecido', color: '#f87171', bg: '#7f1d1d', icon: 'help-circle' },
-  BLOCKED_CARD: { label: 'Cartão Bloqueado', color: '#ef4444', bg: '#450a0a', icon: 'ban' },
+  UNKNOWN_CARD: { label: 'Desconhecido', color: '#f87171', bg: '#7f1d1d', icon: 'help-circle' },
+  BLOCKED_CARD: { label: 'Bloqueado', color: '#ef4444', bg: '#450a0a', icon: 'ban' },
 }
 
 function timeAgo(dateStr: string): string {

@@ -12,9 +12,10 @@ router.get('/summary', async (req: Request, res: Response) => {
     const tenantId = req.user.tenantId
     const todayStart = todayStartLisbon()
 
-    const [totalClients, totalCards, totalDevices, onlineDevices, todayEntries, todayExits, unknownCards, todayWhatsappCheckins] =
+    const [totalClients, activeClients, totalCards, totalDevices, onlineDevices, todayEntries, todayExits, unknownCards, todayWhatsappCheckins] =
       await Promise.all([
         prisma.client.count({ where: { tenantId } }),
+        prisma.client.count({ where: { tenantId, isActive: true } }),
         prisma.card.count({ where: { tenantId } }),
         prisma.device.count({ where: { tenantId } }),
         prisma.device.count({ where: { tenantId, isOnline: true } }),
@@ -24,7 +25,7 @@ router.get('/summary', async (req: Request, res: Response) => {
         prisma.accessLog.count({ where: { tenantId, checkinSource: 'whatsapp', occurredAt: { gte: todayStart } } }),
       ])
 
-    return res.json({ totalClients, totalCards, totalDevices, onlineDevices, todayEntries, todayExits, unknownCards, todayWhatsappCheckins })
+    return res.json({ totalClients, activeClients, totalCards, totalDevices, onlineDevices, todayEntries, todayExits, unknownCards, todayWhatsappCheckins })
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: 'Erro interno do servidor' })
@@ -75,6 +76,13 @@ router.get('/export/csv', async (req: Request, res: Response) => {
       },
     })
 
+    const EVENT_PT: Record<string, string> = {
+      ENTRY: 'Entrada',
+      EXIT: 'Saída',
+      UNKNOWN_CARD: 'Desconhecido',
+      BLOCKED_CARD: 'Bloqueado',
+    }
+
     stringifier.pipe(res)
 
     for (const log of logs) {
@@ -83,8 +91,8 @@ router.get('/export/csv', async (req: Request, res: Response) => {
         clientName: log.client?.name ?? '',
         clientPhone: log.client?.phone ?? '',
         cardUid: log.cardUid ?? '',
-        eventType: log.eventType,
-        checkinSource: log.checkinSource ?? 'rfid',
+        eventType: EVENT_PT[log.eventType] ?? log.eventType,
+        checkinSource: log.checkinSource === 'whatsapp' ? 'WhatsApp' : 'RFID',
         deviceName: log.device?.name ?? '',
       })
     }
