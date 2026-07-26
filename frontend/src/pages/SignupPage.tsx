@@ -128,7 +128,7 @@ export function SignupPage() {
                 value={form.companyName}
                 onChange={(e) => setField('companyName', e.target.value)}
                 required
-                placeholder="Minha Academia"
+                placeholder="A Minha Academia"
                 className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
               />
             </div>

@@ -136,7 +136,7 @@ export function DashboardPage() {
                   <CheckinSourceBadge source={log.checkinSource} />
                   <span className="text-sm text-slate-300 shrink-0">{identifier}</span>
                   <span className="text-sm text-slate-400 truncate flex-1">
-                    {log.client?.name ?? <span className="text-slate-600">sem cliente</span>}
+                    {log.client?.name ?? <span className="text-slate-600">sem participante</span>}
                   </span>
                   <span className="text-xs text-slate-500 shrink-0 hidden sm:block">{log.device?.name}</span>
                   <span className="text-xs text-slate-600 shrink-0">{relativeTime(log.occurredAt)}</span>

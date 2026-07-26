@@ -140,7 +140,7 @@ export function CardsPage() {
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          placeholder="Buscar por UID ou label..."
+          placeholder="Pesquisar por UID ou label..."
           className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
         />
       </div>
@@ -266,7 +266,7 @@ export function CardsPage() {
                 <input
                   value={clientSearch}
                   onChange={(e) => setClientSearch(e.target.value)}
-                  placeholder="Buscar participante..."
+                  placeholder="Pesquisar participante..."
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500 mb-2"
                 />
                 <select
@@ -326,7 +326,7 @@ export function CardsPage() {
                 <input
                   value={editClientSearch}
                   onChange={(e) => setEditClientSearch(e.target.value)}
-                  placeholder="Buscar participante..."
+                  placeholder="Pesquisar participante..."
                   className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500 mb-2"
                 />
                 <select
