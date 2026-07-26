@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../../lib/api'
 import { CheckinSourceBadge } from '../../components/CheckinSourceBadge'
@@ -61,6 +61,16 @@ export function ClientDetailPage() {
     onError: () => toast.error('Erro ao atualizar'),
   })
 
+  const deleteClient = useMutation({
+    mutationFn: () => api.delete(`/clients/${id}`),
+    onSuccess: () => {
+      toast.success('Participante eliminado')
+      qc.invalidateQueries({ queryKey: ['clients'] })
+      navigate('/clients')
+    },
+    onError: () => toast.error('Erro ao eliminar participante'),
+  })
+
   const updateClient = useMutation({
     mutationFn: (body: EditForm) => api.put(`/clients/${id}`, body),
     onSuccess: () => {
@@ -117,6 +127,18 @@ export function ClientDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (window.confirm(`Eliminar "${client.name}"? Esta ação não pode ser desfeita.`)) {
+                deleteClient.mutate()
+              }
+            }}
+            disabled={deleteClient.isPending}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <Trash2 size={14} />
+            Eliminar
+          </button>
           <button
             onClick={openEdit}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"

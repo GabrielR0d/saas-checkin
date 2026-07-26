@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Search, ChevronLeft, ChevronRight, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api'
 import type { Client, PaginatedResponse } from '../types'
@@ -25,12 +25,30 @@ interface NewClientForm {
 
 const EMPTY: NewClientForm = { name: '', phone: '', phoneNumber: '', email: '', document: '' }
 
+function parseCsv(text: string): Array<Record<string, string>> {
+  const lines = text.trim().split('\n').map((l) => l.trim()).filter(Boolean)
+  if (lines.length < 2) return []
+  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase()
+    .replace(/^nome$/, 'name')
+    .replace(/^telefone$|^phone$/, 'phone')
+    .replace(/^whatsapp$|^phonenumber$/, 'phoneNumber')
+    .replace(/^email$/, 'email')
+    .replace(/^documento$|^document$|^nif$|^cc$/, 'document')
+  )
+  return lines.slice(1).map((line) => {
+    const vals = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''))
+    return Object.fromEntries(headers.map((h, i) => [h, vals[i] ?? '']))
+  })
+}
+
 export function ClientsPage() {
   const [search, setSearch] = useState('')
   const [isActiveFilter, setIsActiveFilter] = useState('')
   const [page, setPage] = useState(1)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState<NewClientForm>(EMPTY)
+  const [importing, setImporting] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
   const navigate = useNavigate()
 
@@ -66,6 +84,30 @@ export function ClientsPage() {
     },
   })
 
+  async function handleCsvImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setImporting(true)
+    try {
+      const text = await file.text()
+      const clients = parseCsv(text)
+      if (!clients.length) { toast.error('Ficheiro CSV inválido ou vazio'); return }
+      const res = await api.post('/clients/import', { clients })
+      const { created, skipped, errors } = res.data
+      if (errors?.length) {
+        toast.error(`${created} criados, ${skipped} ignorados. Erros: ${errors.slice(0, 2).join('; ')}`)
+      } else {
+        toast.success(`${created} participantes importados${skipped ? `, ${skipped} ignorados` : ''}`)
+      }
+      qc.invalidateQueries({ queryKey: ['clients'] })
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error ?? 'Erro ao importar CSV')
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const totalPages = data?.meta?.totalPages ?? 1
 
   return (
@@ -75,13 +117,31 @@ export function ClientsPage() {
           <h1 className="text-2xl font-bold text-slate-100">Participantes</h1>
           <p className="text-slate-400 text-sm mt-1">{data?.meta?.total ?? 0} participantes registados</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-        >
-          <Plus size={16} />
-          Novo Participante
-        </button>
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleCsvImport}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+            title="Importar participantes via CSV (colunas: nome,telefone,whatsapp,email,documento)"
+          >
+            <Upload size={16} />
+            {importing ? 'A importar...' : 'Importar CSV'}
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            Novo
+          </button>
+        </div>
       </div>
 
       {/* Search + filter */}

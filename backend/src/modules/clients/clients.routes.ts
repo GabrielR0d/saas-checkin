@@ -108,4 +108,69 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
+// DELETE /clients/:id
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const deleted = await prisma.client.deleteMany({
+      where: { id: req.params.id, tenantId: req.user.tenantId },
+    })
+    if (deleted.count === 0) return res.status(404).json({ error: 'Não encontrado' })
+    return res.json({ success: true })
+  } catch (err: any) {
+    // P2003 = foreign key constraint (e.g. has access logs) — do soft-delete instead
+    if (err?.code === 'P2003') {
+      const updated = await prisma.client.updateMany({
+        where: { id: req.params.id, tenantId: req.user.tenantId },
+        data: { isActive: false },
+      })
+      if (updated.count === 0) return res.status(404).json({ error: 'Não encontrado' })
+      return res.json({ success: true, softDeleted: true })
+    }
+    console.error(err)
+    return res.status(500).json({ error: 'Erro interno do servidor' })
+  }
+})
+
+// POST /clients/import — bulk create from JSON array
+router.post('/import', planLimits('clients'), async (req: Request, res: Response) => {
+  try {
+    const rows: Array<{ name?: string; phone?: string; phoneNumber?: string; email?: string; document?: string }> =
+      Array.isArray(req.body.clients) ? req.body.clients : []
+    if (!rows.length) return res.status(400).json({ error: 'Nenhum dado para importar' })
+    if (rows.length > 1000) return res.status(400).json({ error: 'Máximo 1000 linhas por importação' })
+
+    let created = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    for (const row of rows) {
+      const name = row.name?.trim()
+      const phone = row.phone?.trim()
+      if (!name || !phone) { skipped++; continue }
+      const cleanPhoneNumber = row.phoneNumber ? String(row.phoneNumber).replace(/\D/g, '') || null : null
+      try {
+        await prisma.client.create({
+          data: {
+            tenantId: req.user.tenantId,
+            name,
+            phone,
+            phoneNumber: cleanPhoneNumber,
+            email: row.email?.trim() || null,
+            document: row.document?.trim() || null,
+          },
+        })
+        created++
+      } catch (e: any) {
+        if (e?.code === 'P2002') skipped++ // duplicate phoneNumber
+        else errors.push(`${name}: ${e.message}`)
+      }
+    }
+
+    return res.status(201).json({ created, skipped, errors })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ error: 'Erro interno do servidor' })
+  }
+})
+
 export default router
