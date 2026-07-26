@@ -9,6 +9,7 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { ClientDetailPage } from './pages/clients/ClientDetailPage'
+import { CardsPage } from './pages/CardsPage'
 import { DevicesPage } from './pages/DevicesPage'
 import { LogsPage } from './pages/LogsPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
+          <Route path="/cards" element={<CardsPage />} />
           <Route path="/devices" element={<DevicesPage />} />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/settings" element={<SettingsPage />} />

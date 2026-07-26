@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Users,
+  CreditCard,
   Wifi,
   ClipboardList,
   Settings,
@@ -15,6 +16,7 @@ import { ErrorBoundary } from './ErrorBoundary'
 const NAV_ITEMS = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/clients', icon: Users, label: 'Participantes' },
+  { to: '/cards', icon: CreditCard, label: 'Cartões' },
   { to: '/devices', icon: Wifi, label: 'Dispositivos' },
   { to: '/logs', icon: ClipboardList, label: 'Histórico' },
   { to: '/settings', icon: Settings, label: 'Definições' },
