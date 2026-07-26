@@ -63,7 +63,7 @@ router.post('/checkout', authenticate, async (req: Request, res: Response) => {
     return res.json({ url: session.url })
   } catch (err: any) {
     console.error(err)
-    return res.status(500).json({ error: err.message })
+    return res.status(500).json({ error: 'Erro ao iniciar checkout. Tente novamente.' })
   }
 })
 
@@ -126,7 +126,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
     return res.json({ received: true })
   } catch (err: any) {
     console.error('[Stripe Webhook]', err.message)
-    return res.status(400).json({ error: err.message })
+    return res.status(400).json({ error: 'Assinatura inválida ou erro no webhook' })
   }
 })
 
