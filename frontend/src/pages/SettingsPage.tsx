@@ -309,7 +309,7 @@ export function SettingsPage() {
           {!waConnected && (
             <div className="space-y-3">
               <p className="text-xs text-slate-500">
-                Escaneie o QR Code com o WhatsApp do número que enviará as notificações.
+                Leia o QR Code com o WhatsApp do número que enviará as notificações.
               </p>
               <button
                 type="button"
@@ -323,7 +323,7 @@ export function SettingsPage() {
               {qrImage && (
                 <div className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl w-fit">
                   <img src={qrImage} alt="QR Code WhatsApp" className="w-48 h-48 object-contain" />
-                  <p className="text-xs text-slate-700">Escaneie com o WhatsApp</p>
+                  <p className="text-xs text-slate-700">Leia com o WhatsApp</p>
                 </div>
               )}
             </div>
