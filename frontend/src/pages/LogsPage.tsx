@@ -237,7 +237,7 @@ export function LogsPage() {
               data?.data.map((log) => (
                 <tr key={log.id} className="border-b border-slate-800 last:border-0 hover:bg-slate-800/50 transition-colors">
                   <td className="px-4 py-3 text-slate-300 whitespace-nowrap">
-                    {new Date(log.occurredAt).toLocaleString('pt-PT')}
+                    {new Date(log.occurredAt).toLocaleString('pt-PT', { timeZone: 'Europe/Lisbon' })}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${EVENT_COLORS[log.eventType]}`}>
