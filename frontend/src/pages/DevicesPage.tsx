@@ -97,7 +97,8 @@ export function DevicesPage() {
 
   function copyKey(key: string) {
     navigator.clipboard.writeText(key)
-    toast.success('Chave copiada!')
+      .then(() => toast.success('Chave copiada!'))
+      .catch(() => toast.error('Não foi possível copiar para a área de transferência'))
   }
 
   return (

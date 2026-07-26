@@ -154,10 +154,12 @@ export function SettingsPage() {
   }
 
   function copyWebhook() {
-    navigator.clipboard.writeText(WEBHOOK_URL).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
+    navigator.clipboard.writeText(WEBHOOK_URL)
+      .then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      })
+      .catch(() => toast.error('Não foi possível copiar para a área de transferência'))
   }
 
   const hasLocation = form.locationLat != null && form.locationLng != null
