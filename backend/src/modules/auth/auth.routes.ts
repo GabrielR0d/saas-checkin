@@ -45,7 +45,7 @@ router.post('/login', loginLimiter, async (req: Request, res: Response) => {
     })
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -83,14 +83,14 @@ router.post('/signup', async (req: Request, res: Response) => {
   } catch (err) {
     if (err instanceof z.ZodError) return res.status(400).json({ error: err.errors })
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
 // GET /check-slug
 router.get('/check-slug', slugCheckLimiter, async (req: Request, res: Response) => {
   const slug = req.query.slug as string
-  if (!slug) return res.status(400).json({ error: 'slug query param required' })
+  if (!slug) return res.status(400).json({ error: 'Parâmetro slug obrigatório' })
   const tenant = await prisma.tenant.findUnique({ where: { slug } })
   return res.json({ available: !tenant })
 })
@@ -120,7 +120,7 @@ router.post('/forgot-password', forgotPwLimiter, async (req: Request, res: Respo
     return res.json({ success: true }) // Always 200 — no email enumeration
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -141,7 +141,7 @@ router.post('/reset-password', async (req: Request, res: Response) => {
     return res.json({ success: true })
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 

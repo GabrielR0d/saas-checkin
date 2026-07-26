@@ -43,7 +43,7 @@ router.get('/', async (req: Request, res: Response) => {
     return res.json({ data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } })
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -60,7 +60,7 @@ router.post('/', planLimits('clients'), async (req: Request, res: Response) => {
   } catch (err: any) {
     if (err?.code === 'P2002') return res.status(409).json({ error: 'Este número WhatsApp já está registado para outro participante' })
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -71,11 +71,11 @@ router.get('/:id', async (req: Request, res: Response) => {
       where: { id: req.params.id, tenantId: req.user.tenantId },
       include: { cards: true },
     })
-    if (!client) return res.status(404).json({ error: 'Not found' })
+    if (!client) return res.status(404).json({ error: 'Não encontrado' })
     return res.json(client)
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -98,13 +98,13 @@ router.put('/:id', async (req: Request, res: Response) => {
         isActive: isActive ?? undefined,
       },
     })
-    if (updated.count === 0) return res.status(404).json({ error: 'Not found' })
+    if (updated.count === 0) return res.status(404).json({ error: 'Não encontrado' })
     const client = await prisma.client.findUnique({ where: { id: req.params.id } })
     return res.json(client)
   } catch (err: any) {
     if (err?.code === 'P2002') return res.status(409).json({ error: 'Este número WhatsApp já está registado para outro participante' })
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 

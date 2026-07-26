@@ -10,7 +10,7 @@ const router = Router()
 router.post('/', deviceAuth, async (req: Request, res: Response) => {
   try {
     const { uid } = req.body
-    if (!uid) return res.status(400).json({ error: 'uid required' })
+    if (!uid) return res.status(400).json({ error: 'uid obrigatório' })
 
     const tenantId = req.tenantId!
     const device = req.device!
@@ -109,7 +109,7 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
     return res.json({ success: true, eventType, client: card?.client ?? null })
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 

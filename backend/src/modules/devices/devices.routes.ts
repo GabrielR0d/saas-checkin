@@ -15,7 +15,7 @@ router.get('/', async (req: Request, res: Response) => {
     return res.json({ data })
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -29,18 +29,18 @@ router.post('/', planLimits('devices'), async (req: Request, res: Response) => {
     return res.status(201).json(device)
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const device = await prisma.device.findFirst({ where: { id: req.params.id, tenantId: req.user.tenantId } })
-    if (!device) return res.status(404).json({ error: 'Not found' })
+    if (!device) return res.status(404).json({ error: 'Não encontrado' })
     return res.json(device)
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -51,11 +51,11 @@ router.put('/:id', async (req: Request, res: Response) => {
       where: { id: req.params.id, tenantId: req.user.tenantId },
       data: { name: name ?? undefined, location: location === undefined ? undefined : location || null },
     })
-    if (updated.count === 0) return res.status(404).json({ error: 'Not found' })
+    if (updated.count === 0) return res.status(404).json({ error: 'Não encontrado' })
     return res.json(await prisma.device.findUnique({ where: { id: req.params.id } }))
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -65,11 +65,11 @@ router.post('/:id/rotate-key', async (req: Request, res: Response) => {
       where: { id: req.params.id, tenantId: req.user.tenantId },
       data: { apiKey: crypto.randomUUID() },
     })
-    if (updated.count === 0) return res.status(404).json({ error: 'Not found' })
+    if (updated.count === 0) return res.status(404).json({ error: 'Não encontrado' })
     return res.json(await prisma.device.findUnique({ where: { id: req.params.id } }))
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 
@@ -78,11 +78,11 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const deleted = await prisma.device.deleteMany({
       where: { id: req.params.id, tenantId: req.user.tenantId },
     })
-    if (deleted.count === 0) return res.status(404).json({ error: 'Not found' })
+    if (deleted.count === 0) return res.status(404).json({ error: 'Não encontrado' })
     return res.json({ success: true })
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 

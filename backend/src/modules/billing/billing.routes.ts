@@ -41,7 +41,7 @@ router.get('/me', authenticate, async (req: Request, res: Response) => {
     return res.json({ plan: tenant?.plan ?? 'FREE' })
   } catch (err) {
     console.error(err)
-    return res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Erro interno do servidor' })
   }
 })
 

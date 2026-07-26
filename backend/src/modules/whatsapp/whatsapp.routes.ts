@@ -8,7 +8,7 @@ import { sendWaMsg } from '../../lib/whatsapp'
 import { sendPush } from '../../lib/push'
 
 // 60 webhook calls per minute per IP (Evolution API sends bursts)
-const webhookLimiter = rateLimit({ windowMs: 60_000, max: 60, message: 'Rate limit exceeded' })
+const webhookLimiter = rateLimit({ windowMs: 60_000, max: 60, message: 'Limite de pedidos excedido' })
 
 const router = Router()
 
@@ -202,7 +202,7 @@ router.post('/connect', async (req: Request, res: Response) => {
   try {
     const settings = await getSettings(req.user.tenantId)
     if (!settings?.whatsappApiUrl || !settings.whatsappInstanceId) {
-      return res.status(400).json({ error: 'WhatsApp not configured' })
+      return res.status(400).json({ error: 'WhatsApp não configurado' })
     }
     const apikey = settings.whatsappToken ?? process.env.EVOLUTION_API_KEY ?? ''
     const { data } = await axios.post(
@@ -220,7 +220,7 @@ router.post('/qrcode', async (req: Request, res: Response) => {
   try {
     const settings = await getSettings(req.user.tenantId)
     if (!settings?.whatsappApiUrl || !settings.whatsappInstanceId) {
-      return res.status(400).json({ error: 'WhatsApp not configured' })
+      return res.status(400).json({ error: 'WhatsApp não configurado' })
     }
     const apikey = settings.whatsappToken ?? process.env.EVOLUTION_API_KEY ?? ''
     const { data } = await axios.get(
