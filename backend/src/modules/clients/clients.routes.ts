@@ -136,7 +136,7 @@ router.post('/import', async (req: Request, res: Response) => {
   try {
     const rows: Array<{ name?: string; phone?: string; phoneNumber?: string; email?: string; document?: string }> =
       Array.isArray(req.body.clients) ? req.body.clients : []
-    if (!rows.length) return res.status(400).json({ error: 'Nenhum dado para importar' })
+    if (!rows.length) return res.status(400).json({ error: 'Sem dados para importar' })
     if (rows.length > 1000) return res.status(400).json({ error: 'Máximo 1000 linhas por importação' })
 
     // Enforce plan limits for bulk import

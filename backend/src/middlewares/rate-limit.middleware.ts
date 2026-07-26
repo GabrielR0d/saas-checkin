@@ -11,7 +11,7 @@ interface Bucket {
  * Not distributed — resets on restart. Suitable for single-instance deploys.
  */
 export function rateLimit(options: { windowMs: number; max: number; message?: string }) {
-  const { windowMs, max, message = 'Too many requests' } = options
+  const { windowMs, max, message = 'Limite de pedidos excedido' } = options
   const buckets = new Map<string, Bucket>()
 
   // Clean stale buckets every windowMs to avoid memory leak.
