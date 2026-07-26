@@ -212,7 +212,8 @@ router.post('/connect', async (req: Request, res: Response) => {
     )
     return res.json(data)
   } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+    console.error('[WhatsApp] connect error:', err.message)
+    return res.status(500).json({ error: 'Erro ao criar instância WhatsApp. Verifique as configurações.' })
   }
 })
 
@@ -229,7 +230,8 @@ router.post('/qrcode', async (req: Request, res: Response) => {
     )
     return res.json(data)
   } catch (err: any) {
-    return res.status(500).json({ error: err.message })
+    console.error('[WhatsApp] qrcode error:', err.message)
+    return res.status(500).json({ error: 'Erro ao obter QR Code. Verifique as configurações.' })
   }
 })
 

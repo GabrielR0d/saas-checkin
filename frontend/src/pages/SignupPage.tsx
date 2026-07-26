@@ -103,7 +103,7 @@ export function SignupPage() {
                 value={form.email}
                 onChange={(e) => setField('email', e.target.value)}
                 required
-                placeholder="seu@email.com"
+                placeholder="o-seu@email.com"
                 className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-500"
               />
             </div>
