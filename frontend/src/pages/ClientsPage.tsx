@@ -114,7 +114,12 @@ export function ClientsPage() {
       }
       qc.invalidateQueries({ queryKey: ['clients'] })
     } catch (err: any) {
-      toast.error(err?.response?.data?.error ?? 'Erro ao importar CSV')
+      const d = err?.response?.data
+      if (d?.error === 'PLAN_LIMIT') {
+        toast.error(`Limite do plano atingido (${d.current}/${d.limit}). Faça upgrade em Planos.`)
+      } else {
+        toast.error(d?.error ?? 'Erro ao importar CSV')
+      }
     } finally {
       setImporting(false)
     }
