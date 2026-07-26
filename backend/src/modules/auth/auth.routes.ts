@@ -89,10 +89,15 @@ router.post('/signup', async (req: Request, res: Response) => {
 
 // GET /check-slug
 router.get('/check-slug', slugCheckLimiter, async (req: Request, res: Response) => {
-  const slug = req.query.slug as string
-  if (!slug) return res.status(400).json({ error: 'Parâmetro slug obrigatório' })
-  const tenant = await prisma.tenant.findUnique({ where: { slug } })
-  return res.json({ available: !tenant })
+  try {
+    const slug = req.query.slug as string
+    if (!slug) return res.status(400).json({ error: 'Parâmetro slug obrigatório' })
+    const tenant = await prisma.tenant.findUnique({ where: { slug } })
+    return res.json({ available: !tenant })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ error: 'Erro interno do servidor' })
+  }
 })
 
 // POST /forgot-password

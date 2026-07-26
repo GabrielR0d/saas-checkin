@@ -172,7 +172,7 @@ router.post('/import', async (req: Request, res: Response) => {
         created++
       } catch (e: any) {
         if (e?.code === 'P2002') skipped++ // duplicate phoneNumber
-        else errors.push(`${name}: ${e.message}`)
+        else { console.error('[import]', e); errors.push(`${name}: erro ao criar`) }
       }
     }
 
