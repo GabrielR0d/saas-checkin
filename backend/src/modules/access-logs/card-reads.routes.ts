@@ -91,9 +91,13 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
         const msg = eventType === 'ENTRY'
           ? `✅ Entrada às ${time}. Bem-vindo(a), *${card.client.name}*!`
           : `👋 Saída às ${time}. Até logo, *${card.client.name}*!`
-        sendWaMsg(waNumber, msg, settings).catch((err) =>
-          console.error('[WhatsApp] Send failed:', err.message)
-        )
+        sendWaMsg(waNumber, msg, settings)
+          .then((sent) => {
+            if (sent) {
+              prisma.accessLog.update({ where: { id: log.id }, data: { whatsappSent: true } }).catch(() => {})
+            }
+          })
+          .catch((err) => console.error('[WhatsApp] Send failed:', err.message))
       }
 
       // Push notification to the admin mobile app
