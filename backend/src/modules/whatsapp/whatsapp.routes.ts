@@ -50,11 +50,9 @@ router.post('/webhook', webhookLimiter, async (req: Request, res: Response): Pro
     }
 
     // Portuguese mobile numbers are 9 digits (e.g. 912345678).
-    // WhatsApp sends the international format: 351912345678.
-    // We need to match regardless of whether the number was stored
-    // with or without the +351 country code prefix.
-    const phone9  = rawPhone.slice(-9)   // last 9 digits  → 912345678
-    const phone11 = rawPhone.slice(-11)  // last 11 digits  (legacy BR format, kept for compat)
+    // WhatsApp sends the international format: 351912345678 (12 digits).
+    // Match regardless of whether the number was stored with or without the +351 prefix.
+    const phone9 = rawPhone.slice(-9)  // last 9 digits → 912345678
 
     // Identify which tenant this webhook belongs to via instance name.
     // (Evolution API sends { instance: "instanceName", data: { ... } } at top level)
@@ -68,11 +66,9 @@ router.post('/webhook', webhookLimiter, async (req: Request, res: Response): Pro
     // support multi-tenant: the same phone number can exist in different tenants.
     const phoneWhere = {
       OR: [
-        { phoneNumber: rawPhone },          // exact match (e.g. "351912345678")
-        { phoneNumber: phone9 },            // stored without country code ("912345678")
+        { phoneNumber: rawPhone },               // exact match: "351912345678"
+        { phoneNumber: phone9 },                 // stored without country code: "912345678"
         { phoneNumber: { endsWith: phone9 } },   // stored with any prefix
-        { phoneNumber: phone11 },
-        { phoneNumber: { endsWith: phone11 } },
       ],
       ...(tenantSettingsByInstance ? { tenantId: tenantSettingsByInstance.tenantId } : {}),
     }
