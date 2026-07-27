@@ -41,7 +41,7 @@ router.post('/', deviceAuth, async (req: Request, res: Response) => {
     if (!card) {
       eventType = 'UNKNOWN_CARD'
       direction = 'IN'
-    } else if (card.status === 'BLOCKED') {
+    } else if (card.status === 'BLOCKED' || card.status === 'LOST') {
       eventType = 'BLOCKED_CARD'
       direction = 'IN'
     } else if (lastLog?.direction === 'IN') {
