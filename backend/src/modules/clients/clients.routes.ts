@@ -152,6 +152,8 @@ router.post('/import', async (req: Request, res: Response) => {
     let skipped = 0
     const errors: string[] = []
     const slotsLeft = limit === Infinity ? rows.length : Math.max(0, limit - current)
+    // Rows that don't fit in the remaining plan quota (silently dropped without this tracking)
+    const slotCapped = Math.max(0, rows.length - slotsLeft)
 
     for (const row of rows.slice(0, slotsLeft)) {
       const name = row.name?.trim()
@@ -176,7 +178,7 @@ router.post('/import', async (req: Request, res: Response) => {
       }
     }
 
-    return res.status(201).json({ created, skipped, errors })
+    return res.status(201).json({ created, skipped, errors, ...(slotCapped > 0 ? { slotCapped } : {}) })
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: 'Erro interno do servidor' })

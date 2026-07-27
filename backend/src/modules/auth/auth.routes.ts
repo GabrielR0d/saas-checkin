@@ -53,11 +53,11 @@ router.post('/login', loginLimiter, async (req: Request, res: Response) => {
 router.post('/signup', async (req: Request, res: Response) => {
   try {
     const schema = z.object({
-      name: z.string().min(2),
-      email: z.string().email(),
-      password: z.string().min(6),
-      companyName: z.string().min(2),
-      slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
+      name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+      email: z.string().email('Email inválido'),
+      password: z.string().min(6, 'Palavra-passe deve ter pelo menos 6 caracteres'),
+      companyName: z.string().min(2, 'Nome da empresa deve ter pelo menos 2 caracteres'),
+      slug: z.string().min(2, 'Identificador deve ter pelo menos 2 caracteres').regex(/^[a-z0-9-]+$/, 'Identificador só pode conter letras minúsculas, números e hífens'),
     })
     const body = schema.parse(req.body)
 

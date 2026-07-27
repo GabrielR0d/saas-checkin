@@ -106,8 +106,10 @@ export function ClientsPage() {
       const clients = parseCsv(text)
       if (!clients.length) { toast.error('Ficheiro CSV inválido ou vazio'); return }
       const res = await api.post('/clients/import', { clients })
-      const { created, skipped, errors } = res.data
-      if (errors?.length) {
+      const { created, skipped, errors, slotCapped } = res.data
+      if (slotCapped) {
+        toast(`${created} participantes importados${skipped ? `, ${skipped} ignorados` : ''}. ${slotCapped} não importados por limite do plano — faça upgrade em Planos.`, { icon: '⚠️' })
+      } else if (errors?.length) {
         toast.error(`${created} criados, ${skipped} ignorados. Erros: ${errors.slice(0, 2).join('; ')}`)
       } else {
         toast.success(`${created} participantes importados${skipped ? `, ${skipped} ignorados` : ''}`)
